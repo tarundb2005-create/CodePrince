@@ -14,7 +14,7 @@ services:
       - ./backend:/app
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      DATABASE_URL: sqlite:///./dsa_forge.db
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://postgres:postgres@host.docker.internal:5432/dsa_forge}
       CORS_ORIGINS: http://localhost:5174
       EXECUTOR_IMAGE: dsa-forge-executor:local
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}

@@ -12,9 +12,14 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from pwdlib import PasswordHash
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, create_engine, func, select
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, create_engine, func, inspect, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, Session, sessionmaker
+from dotenv import load_dotenv
 
+_project_root = Path(__file__).resolve().parents[2]
+load_dotenv(_project_root / ".env")
+load_dotenv(_project_root.parent / ".env")
+load_dotenv()
 DB_URL = os.getenv("DATABASE_URL", "sqlite:///./dsa_forge.db")
 engine = create_engine(DB_URL, connect_args={"check_same_thread": False} if DB_URL.startswith("sqlite") else {})
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
@@ -22,7 +27,11 @@ password_hash = PasswordHash.recommended()
 
 class Base(DeclarativeBase): pass
 class User(Base):
-    __tablename__="users"; id: Mapped[int]=mapped_column(primary_key=True); email: Mapped[str]=mapped_column(String(255),unique=True,index=True); password_hash: Mapped[str]=mapped_column(String(255)); role: Mapped[str]=mapped_column(String(20),default="student",index=True); registration_number: Mapped[str|None]=mapped_column(String(64),unique=True,nullable=True,index=True); created_at: Mapped[datetime]=mapped_column(DateTime,default=datetime.utcnow)
+    __tablename__="users"; id: Mapped[int]=mapped_column(primary_key=True); email: Mapped[str]=mapped_column(String(255),unique=True,index=True); password_hash: Mapped[str]=mapped_column(String(255)); role: Mapped[str]=mapped_column(String(20),default="student",index=True); registration_number: Mapped[str|None]=mapped_column(String(64),unique=True,nullable=True,index=True); full_name: Mapped[str|None]=mapped_column(String(120),nullable=True); year_of_study: Mapped[int|None]=mapped_column(Integer,nullable=True); department_id: Mapped[int|None]=mapped_column(ForeignKey("departments.id",ondelete="SET NULL"),nullable=True); section_id: Mapped[int|None]=mapped_column(ForeignKey("academic_sections.id",ondelete="SET NULL"),nullable=True); approval_status: Mapped[str]=mapped_column(String(16),default="Approved"); created_at: Mapped[datetime]=mapped_column(DateTime,default=datetime.utcnow)
+class Department(Base):
+    __tablename__="departments"; id: Mapped[int]=mapped_column(primary_key=True); name: Mapped[str]=mapped_column(String(100),unique=True,index=True)
+class AcademicSection(Base):
+    __tablename__="academic_sections"; __table_args__=(UniqueConstraint("department_id","name"),); id: Mapped[int]=mapped_column(primary_key=True); department_id: Mapped[int]=mapped_column(ForeignKey("departments.id",ondelete="CASCADE"),index=True); name: Mapped[str]=mapped_column(String(50))
 class LoginSession(Base):
     __tablename__="sessions"; id: Mapped[int]=mapped_column(primary_key=True); token_hash: Mapped[str]=mapped_column(String(64),unique=True,index=True); user_id: Mapped[int]=mapped_column(ForeignKey("users.id",ondelete="CASCADE")); expires_at: Mapped[datetime]=mapped_column(DateTime)
 class Topic(Base):
@@ -43,6 +52,10 @@ class CourseQuestion(Base):
     __tablename__="course_questions"; course_id: Mapped[int]=mapped_column(ForeignKey("courses.id",ondelete="CASCADE"),primary_key=True); question_id: Mapped[int]=mapped_column(ForeignKey("questions.id",ondelete="CASCADE"),primary_key=True); position: Mapped[int]=mapped_column(default=0)
 class Enrollment(Base):
     __tablename__="enrollments"; __table_args__=(UniqueConstraint("course_id","student_id"),); id: Mapped[int]=mapped_column(primary_key=True); course_id: Mapped[int]=mapped_column(ForeignKey("courses.id",ondelete="CASCADE"),index=True); student_id: Mapped[int]=mapped_column(ForeignKey("users.id",ondelete="CASCADE"),index=True); faculty_id: Mapped[int|None]=mapped_column(ForeignKey("users.id",ondelete="SET NULL"),nullable=True); created_at: Mapped[datetime]=mapped_column(DateTime,default=datetime.utcnow)
+class FacultyStudent(Base):
+    __tablename__="faculty_students"; __table_args__=(UniqueConstraint("faculty_id","student_id"),); id: Mapped[int]=mapped_column(primary_key=True); faculty_id: Mapped[int]=mapped_column(ForeignKey("users.id",ondelete="CASCADE"),index=True); student_id: Mapped[int]=mapped_column(ForeignKey("users.id",ondelete="CASCADE"),index=True); created_at: Mapped[datetime]=mapped_column(DateTime,default=datetime.utcnow)
+class ProblemAssignment(Base):
+    __tablename__="problem_assignments"; __table_args__=(UniqueConstraint("faculty_id","student_id","question_id"),); id: Mapped[int]=mapped_column(primary_key=True); faculty_id: Mapped[int]=mapped_column(ForeignKey("users.id",ondelete="CASCADE"),index=True); student_id: Mapped[int]=mapped_column(ForeignKey("users.id",ondelete="CASCADE"),index=True); question_id: Mapped[int]=mapped_column(ForeignKey("questions.id",ondelete="CASCADE"),index=True); due_at: Mapped[datetime|None]=mapped_column(DateTime,nullable=True); note: Mapped[str]=mapped_column(Text,default=""); created_at: Mapped[datetime]=mapped_column(DateTime,default=datetime.utcnow)
 class Assessment(Base):
     __tablename__="assessments"; id: Mapped[int]=mapped_column(primary_key=True); course_id: Mapped[int]=mapped_column(ForeignKey("courses.id",ondelete="CASCADE"),index=True); faculty_id: Mapped[int]=mapped_column(ForeignKey("users.id",ondelete="CASCADE")); title: Mapped[str]=mapped_column(String(160)); description: Mapped[str]=mapped_column(Text,default=""); starts_at: Mapped[datetime|None]=mapped_column(DateTime,nullable=True); ends_at: Mapped[datetime|None]=mapped_column(DateTime,nullable=True); published: Mapped[bool]=mapped_column(Boolean,default=False); created_at: Mapped[datetime]=mapped_column(DateTime,default=datetime.utcnow)
 class AssessmentQuestion(Base):
@@ -72,7 +85,9 @@ def current(request:Request, s:Session=Depends(db)):
     raw=request.cookies.get(os.getenv("SESSION_COOKIE_NAME","dsa_forge_session"))
     row=s.scalar(select(LoginSession).where(LoginSession.token_hash==token_hash(raw or ""),LoginSession.expires_at>datetime.utcnow()))
     if not row: raise HTTPException(401,"Authentication required")
-    return s.get(User,row.user_id)
+    user=s.get(User,row.user_id)
+    if user and user.role=="student" and user.approval_status!="Approved": raise HTTPException(403,"Student account is pending admin approval")
+    return user
 def slugify(title:str):
     base="".join(c.lower() if c.isalnum() else "-" for c in title).strip("-")[:180] or "question"; return f"{base}-{secrets.token_hex(4)}"
 def visible(q:Question,s:Session):
@@ -87,9 +102,14 @@ def progress_for(s,u,qid):
 def seed():
     Base.metadata.create_all(engine)
     with engine.begin() as conn:
-      columns=[row[1] for row in conn.exec_driver_sql("PRAGMA table_info(users)")]
+      columns=[column["name"] for column in inspect(conn).get_columns("users")]
       if "role" not in columns: conn.exec_driver_sql("ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'student'")
       if "registration_number" not in columns: conn.exec_driver_sql("ALTER TABLE users ADD COLUMN registration_number VARCHAR(64)")
+      if "full_name" not in columns: conn.exec_driver_sql("ALTER TABLE users ADD COLUMN full_name VARCHAR(120)")
+      if "year_of_study" not in columns: conn.exec_driver_sql("ALTER TABLE users ADD COLUMN year_of_study INTEGER")
+      if "department_id" not in columns: conn.exec_driver_sql("ALTER TABLE users ADD COLUMN department_id INTEGER")
+      if "section_id" not in columns: conn.exec_driver_sql("ALTER TABLE users ADD COLUMN section_id INTEGER")
+      if "approval_status" not in columns: conn.exec_driver_sql("ALTER TABLE users ADD COLUMN approval_status VARCHAR(16) NOT NULL DEFAULT 'Approved'")
     with SessionLocal() as s:
       admin_email=os.getenv("ADMIN_EMAIL","").strip().lower(); admin_password=os.getenv("ADMIN_PASSWORD","")
       if admin_email and admin_password and not s.scalar(select(User).where(User.email==admin_email)):
@@ -132,11 +152,14 @@ def health(): return {"status":"ok","executor":"docker" if _docker() else "unava
 @app.post("/api/auth/register",status_code=201)
 def register(body:Credentials,response:Response,s:Session=Depends(db)):
     if s.scalar(select(User).where(User.email==body.email.lower())): raise HTTPException(409,"Email already registered")
-    u=User(email=body.email.lower(),password_hash=password_hash.hash(body.password),registration_number=body.registration_number,role="student");s.add(u);s.commit();s.refresh(u); return _login(u,response,s)
+    registration_number=(body.registration_number or "").strip() or None
+    if registration_number and s.scalar(select(User).where(User.registration_number==registration_number)): raise HTTPException(409,"Registration number already registered")
+    u=User(email=body.email.lower(),password_hash=password_hash.hash(body.password),registration_number=registration_number,role="student");s.add(u);s.commit();s.refresh(u); return _login(u,response,s)
 @app.post("/api/auth/login")
 def login(body:Credentials,response:Response,s:Session=Depends(db)):
     u=s.scalar(select(User).where(User.email==body.email.lower()))
     if not u or not password_hash.verify(body.password,u.password_hash): raise HTTPException(401,"Invalid email or password")
+    if u.role=="student" and u.approval_status!="Approved": raise HTTPException(403,"Student account is pending admin approval")
     return _login(u,response,s)
 def _login(u,response,s):
     raw=secrets.token_urlsafe(32);s.add(LoginSession(token_hash=token_hash(raw),user_id=u.id,expires_at=datetime.utcnow()+timedelta(days=14)));s.commit();response.set_cookie(os.getenv("SESSION_COOKIE_NAME","dsa_forge_session"),raw,httponly=True,samesite="lax",secure=False,max_age=1209600);return {"id":u.id,"email":u.email,"role":u.role,"registration_number":u.registration_number}
@@ -399,19 +422,77 @@ def import_data(payload:dict,u:User=Depends(current),s:Session=Depends(db)):
 def require_role(user: User, *roles: str):
     if user.role not in roles: raise HTTPException(403, "This action is not permitted for your account role")
 def course_view(course: Course): return {"id":course.id,"title":course.title,"code":course.code,"description":course.description,"faculty_id":course.faculty_id,"active":course.active}
-class AccountIn(Credentials): role: Literal["admin","faculty","student"]="student"
+class AccountIn(Credentials):
+    role: Literal["admin","faculty","student"]="student"; full_name:str|None=Field(default=None,max_length=120); year_of_study:int|None=Field(default=None,ge=1,le=8); department_id:int|None=None; section_id:int|None=None; approval_status:Literal["Approved","Pending"]="Approved"
 class CourseIn(BaseModel): title: str=Field(min_length=2,max_length=160); code: str=Field(min_length=2,max_length=40); description: str=""; faculty_id: int|None=None
 class AssessmentIn(BaseModel): course_id:int; title:str=Field(min_length=2,max_length=160); description:str=""; starts_at:datetime|None=None; ends_at:datetime|None=None; question_ids:list[int]=[]
+class ProblemAssignmentIn(BaseModel): question_id:int; student_ids:list[int]=Field(min_length=1); due_at:datetime|None=None; note:str=Field(default="",max_length=1000)
+class RegistrationNumberIn(BaseModel): registration_number:str=Field(min_length=1,max_length=64)
+class DepartmentIn(BaseModel): name:str=Field(min_length=2,max_length=100)
+class SectionIn(BaseModel): name:str=Field(min_length=1,max_length=50)
+class StudentDirectoryUpdate(BaseModel): full_name:str|None=Field(default=None,max_length=120); year_of_study:int|None=Field(default=None,ge=1,le=8); department_id:int|None=None; section_id:int|None=None; approval_status:Literal["Approved","Pending"]|None=None
 
 @app.post("/api/admin/users",status_code=201)
 def admin_create_user(body:AccountIn,u:User=Depends(current),s:Session=Depends(db)):
     require_role(u,"admin")
     if s.scalar(select(User).where(User.email==body.email.lower())): raise HTTPException(409,"Email already registered")
-    if body.registration_number and s.scalar(select(User).where(User.registration_number==body.registration_number)): raise HTTPException(409,"Registration number already registered")
-    x=User(email=body.email.lower(),password_hash=password_hash.hash(body.password),role=body.role,registration_number=body.registration_number);s.add(x);s.commit();return {"id":x.id,"email":x.email,"role":x.role,"registration_number":x.registration_number}
+    registration_number=(body.registration_number or "").strip() or None
+    if registration_number and s.scalar(select(User).where(User.registration_number==registration_number)): raise HTTPException(409,"Registration number already registered")
+    if body.department_id and not s.get(Department,body.department_id): raise HTTPException(404,"Department not found")
+    if body.section_id:
+      section=s.get(AcademicSection,body.section_id)
+      if not section or section.department_id!=body.department_id: raise HTTPException(422,"Choose a section from the selected department")
+    x=User(email=body.email.lower(),password_hash=password_hash.hash(body.password),role=body.role,registration_number=registration_number,full_name=(body.full_name or "").strip() or None,year_of_study=body.year_of_study,department_id=body.department_id,section_id=body.section_id,approval_status=body.approval_status);s.add(x);s.commit();return {"id":x.id,"email":x.email,"role":x.role,"registration_number":x.registration_number,"full_name":x.full_name,"year_of_study":x.year_of_study,"department_id":x.department_id,"section_id":x.section_id,"approval_status":x.approval_status}
 @app.get("/api/admin/users")
-def admin_users(u:User=Depends(current),s:Session=Depends(db)):
-    require_role(u,"admin");return [{"id":x.id,"email":x.email,"role":x.role,"registration_number":x.registration_number} for x in s.scalars(select(User).order_by(User.id))]
+def admin_users(role:Literal["admin","faculty","student"]|None=None,u:User=Depends(current),s:Session=Depends(db)):
+    require_role(u,"admin")
+    query=select(User,Department.name,AcademicSection.name).outerjoin(Department,Department.id==User.department_id).outerjoin(AcademicSection,AcademicSection.id==User.section_id)
+    if role: query=query.where(User.role==role)
+    rows=s.execute(query.order_by(User.id)).all()
+    return [{"id":x.id,"email":x.email,"role":x.role,"registration_number":x.registration_number,"full_name":x.full_name,"year_of_study":x.year_of_study,"department_id":x.department_id,"department":department,"section_id":x.section_id,"section":section,"approval_status":x.approval_status,"created_at":x.created_at} for x,department,section in rows]
+@app.get("/api/admin/departments")
+def admin_departments(u:User=Depends(current),s:Session=Depends(db)):
+    require_role(u,"admin")
+    departments=s.scalars(select(Department).order_by(Department.name)).all()
+    sections=s.scalars(select(AcademicSection).order_by(AcademicSection.name)).all()
+    return [{"id":department.id,"name":department.name,"sections":[{"id":section.id,"name":section.name} for section in sections if section.department_id==department.id]} for department in departments]
+@app.post("/api/admin/departments",status_code=201)
+def admin_create_department(body:DepartmentIn,u:User=Depends(current),s:Session=Depends(db)):
+    require_role(u,"admin")
+    name=body.name.strip()
+    if len(name)<2: raise HTTPException(422,"Department name must contain at least 2 characters")
+    if s.scalar(select(Department).where(func.lower(Department.name)==name.lower())): raise HTTPException(409,"Department already exists")
+    department=Department(name=name);s.add(department);s.commit();return {"id":department.id,"name":department.name,"sections":[]}
+@app.post("/api/admin/departments/{department_id}/sections",status_code=201)
+def admin_create_section(department_id:int,body:SectionIn,u:User=Depends(current),s:Session=Depends(db)):
+    require_role(u,"admin")
+    if not s.get(Department,department_id): raise HTTPException(404,"Department not found")
+    name=body.name.strip()
+    if not name: raise HTTPException(422,"Section name is required")
+    if s.scalar(select(AcademicSection).where(AcademicSection.department_id==department_id,func.lower(AcademicSection.name)==name.lower())): raise HTTPException(409,"Section already exists in this department")
+    section=AcademicSection(department_id=department_id,name=name);s.add(section);s.commit();return {"id":section.id,"name":section.name,"department_id":department_id}
+@app.patch("/api/admin/users/{user_id}")
+def admin_update_student(user_id:int,body:StudentDirectoryUpdate,u:User=Depends(current),s:Session=Depends(db)):
+    require_role(u,"admin")
+    student=s.get(User,user_id)
+    if not student or student.role!="student": raise HTTPException(404,"Student not found")
+    fields=body.model_fields_set
+    department_id=body.department_id if "department_id" in fields else student.department_id
+    section_id=body.section_id if "section_id" in fields else student.section_id
+    if department_id and not s.get(Department,department_id): raise HTTPException(404,"Department not found")
+    if section_id:
+      section=s.get(AcademicSection,section_id)
+      if not section or section.department_id!=department_id: raise HTTPException(422,"Choose a section from the selected department")
+    for field in fields: setattr(student,field,getattr(body,field))
+    s.commit();return {"id":student.id,"full_name":student.full_name,"year_of_study":student.year_of_study,"department_id":student.department_id,"section_id":student.section_id,"approval_status":student.approval_status}
+@app.patch("/api/profile/registration-number")
+def update_registration_number(body:RegistrationNumberIn,u:User=Depends(current),s:Session=Depends(db)):
+    require_role(u,"student")
+    registration_number=body.registration_number.strip()
+    if not registration_number: raise HTTPException(422,"Registration number is required")
+    existing=s.scalar(select(User).where(User.registration_number==registration_number,User.id!=u.id))
+    if existing: raise HTTPException(409,"Registration number already registered")
+    u.registration_number=registration_number;s.commit();return {"registration_number":u.registration_number}
 @app.get("/api/admin/statistics")
 def admin_statistics(u:User=Depends(current),s:Session=Depends(db)):
     require_role(u,"admin");return {"users":{r:s.scalar(select(func.count()).select_from(User).where(User.role==r)) for r in ("admin","faculty","student")},"courses":s.scalar(select(func.count()).select_from(Course)),"assessments":s.scalar(select(func.count()).select_from(Assessment)),"submissions":s.scalar(select(func.count()).select_from(Submission)),"problems":s.scalar(select(func.count()).select_from(Question))}
@@ -433,47 +514,133 @@ def admin_analytics(u:User=Depends(current),s:Session=Depends(db)):
     return {"submissions":list(days.values())[-30:],"user_growth":[{"month":key,"value":value} for key,value in sorted(growth.items())]}
 @app.post("/api/courses",status_code=201)
 def create_course(body:CourseIn,u:User=Depends(current),s:Session=Depends(db)):
-    require_role(u,"admin","faculty")
-    faculty_id=body.faculty_id if u.role=="admin" else u.id
+    require_role(u,"admin")
+    faculty_id=body.faculty_id
     if faculty_id and (not s.get(User,faculty_id) or s.get(User,faculty_id).role!="faculty"): raise HTTPException(422,"faculty_id must identify a faculty account")
     if s.scalar(select(Course).where(Course.code==body.code.upper())): raise HTTPException(409,"Course code already exists")
     c=Course(title=body.title,code=body.code.upper(),description=body.description,faculty_id=faculty_id);s.add(c);s.commit();return course_view(c)
 @app.get("/api/courses")
 def list_courses(u:User=Depends(current),s:Session=Depends(db)):
     if u.role=="admin": rows=s.scalars(select(Course)).all()
-    elif u.role=="faculty": rows=s.scalars(select(Course).where(Course.faculty_id==u.id)).all()
+    elif u.role=="faculty": rows=s.scalars(select(Course).where((Course.faculty_id==u.id)|(Course.faculty_id.is_(None)))).all()
     else: rows=s.scalars(select(Course).join(Enrollment,Enrollment.course_id==Course.id).where(Enrollment.student_id==u.id)).all()
     return [course_view(c) for c in rows]
+@app.get("/api/courses/{course_id}/students")
+def course_students(course_id:int,u:User=Depends(current),s:Session=Depends(db)):
+    c=s.get(Course,course_id)
+    if not c: raise HTTPException(404,"Course not found")
+    if u.role=="faculty" and c.faculty_id not in (None,u.id): raise HTTPException(404,"Course not found")
+    require_role(u,"admin","faculty")
+    rows=s.execute(select(User,Enrollment.created_at).join(Enrollment,Enrollment.student_id==User.id).where(Enrollment.course_id==course_id).order_by(User.email)).all()
+    return [{"id":student.id,"email":student.email,"registration_number":student.registration_number,"mapped_at":mapped_at} for student,mapped_at in rows]
+@app.get("/api/faculty/students")
+def faculty_students(u:User=Depends(current),s:Session=Depends(db)):
+    require_role(u,"faculty")
+    mapped={student.id:(student,mapped_at) for student,mapped_at in s.execute(select(User,FacultyStudent.created_at).join(FacultyStudent,FacultyStudent.student_id==User.id).where(FacultyStudent.faculty_id==u.id)).all()}
+    enrolled=s.execute(select(User,Enrollment.created_at).join(Enrollment,Enrollment.student_id==User.id).join(Course,Course.id==Enrollment.course_id).where((Course.faculty_id==u.id)|(Enrollment.faculty_id==u.id))).all()
+    for student,mapped_at in enrolled: mapped.setdefault(student.id,(student,mapped_at))
+    rows=sorted(mapped.values(),key=lambda item:item[0].email)
+    counts={}
+    if mapped:
+      counts=dict(s.execute(select(Enrollment.student_id,func.count(Enrollment.id)).join(Course,Course.id==Enrollment.course_id).where(((Course.faculty_id==u.id)|(Enrollment.faculty_id==u.id)),Enrollment.student_id.in_(mapped.keys())).group_by(Enrollment.student_id)).all())
+    return [{"id":student.id,"email":student.email,"registration_number":student.registration_number,"full_name":student.full_name,"year_of_study":student.year_of_study,"department":s.get(Department,student.department_id).name if student.department_id and s.get(Department,student.department_id) else None,"section":s.get(AcademicSection,student.section_id).name if student.section_id and s.get(AcademicSection,student.section_id) else None,"course_count":counts.get(student.id,0),"mapped_at":mapped_at} for student,mapped_at in rows]
+@app.get("/api/faculty/academic-options")
+def faculty_academic_options(u:User=Depends(current),s:Session=Depends(db)):
+    require_role(u,"faculty")
+    departments=s.scalars(select(Department).order_by(Department.name)).all()
+    sections=s.scalars(select(AcademicSection).order_by(AcademicSection.name)).all()
+    return [{"id":department.id,"name":department.name,"sections":[{"id":section.id,"name":section.name} for section in sections if section.department_id==department.id]} for department in departments]
+@app.post("/api/faculty/students",status_code=201)
+def map_faculty_student(registration_number:str,u:User=Depends(current),s:Session=Depends(db)):
+    require_role(u,"faculty")
+    registration_number=registration_number.strip()
+    if not registration_number: raise HTTPException(422,"Enter a registration number")
+    student=s.scalar(select(User).where(User.registration_number==registration_number,User.role=="student"))
+    if not student: raise HTTPException(404,"Student registration number not found")
+    if s.scalar(select(FacultyStudent).where(FacultyStudent.faculty_id==u.id,FacultyStudent.student_id==student.id)): raise HTTPException(409,"Student is already mapped to your faculty account")
+    s.add(FacultyStudent(faculty_id=u.id,student_id=student.id));s.commit();return {"faculty_id":u.id,"student_id":student.id}
+@app.get("/api/faculty/problem-assignments")
+def faculty_problem_assignments(u:User=Depends(current),s:Session=Depends(db)):
+    require_role(u,"faculty")
+    rows=s.execute(select(ProblemAssignment,User,Question).join(User,User.id==ProblemAssignment.student_id).join(Question,Question.id==ProblemAssignment.question_id).where(ProblemAssignment.faculty_id==u.id).order_by(ProblemAssignment.created_at.desc())).all()
+    return [{"id":assignment.id,"student_id":student.id,"student_email":student.email,"registration_number":student.registration_number,"question_id":question.id,"question_title":question.title,"difficulty":question.difficulty,"topic":question.topic,"due_at":assignment.due_at,"note":assignment.note,"created_at":assignment.created_at,"completed":bool(s.scalar(select(Progress.id).where(Progress.user_id==student.id,Progress.question_id==question.id,Progress.solved==True)))} for assignment,student,question in rows]
+@app.post("/api/faculty/problem-assignments",status_code=201)
+def create_faculty_problem_assignments(body:ProblemAssignmentIn,u:User=Depends(current),s:Session=Depends(db)):
+    require_role(u,"faculty")
+    question=s.get(Question,body.question_id)
+    if not question or (not question.published and question.owner_id!=u.id): raise HTTPException(404,"Problem not found")
+    ids=list(dict.fromkeys(body.student_ids))
+    mapped_ids=set(s.scalars(select(FacultyStudent.student_id).where(FacultyStudent.faculty_id==u.id,FacultyStudent.student_id.in_(ids)))) if ids else set()
+    enrolled_ids=set(s.scalars(select(Enrollment.student_id).join(Course,Course.id==Enrollment.course_id).where(((Course.faculty_id==u.id)|(Enrollment.faculty_id==u.id)),Enrollment.student_id.in_(ids)))) if ids else set()
+    allowed=mapped_ids|enrolled_ids
+    if not allowed: raise HTTPException(422,"Choose at least one student mapped to your faculty account")
+    created=0
+    for student_id in ids:
+      if student_id not in allowed or s.scalar(select(ProblemAssignment.id).where(ProblemAssignment.faculty_id==u.id,ProblemAssignment.student_id==student_id,ProblemAssignment.question_id==question.id)): continue
+      s.add(ProblemAssignment(faculty_id=u.id,student_id=student_id,question_id=question.id,due_at=body.due_at,note=body.note.strip()));created+=1
+    if not created: raise HTTPException(409,"This problem is already assigned to the selected students")
+    s.commit();return {"created":created}
+@app.delete("/api/faculty/problem-assignments/{assignment_id}",status_code=204)
+def delete_faculty_problem_assignment(assignment_id:int,u:User=Depends(current),s:Session=Depends(db)):
+    require_role(u,"faculty")
+    assignment=s.get(ProblemAssignment,assignment_id)
+    if not assignment or assignment.faculty_id!=u.id: raise HTTPException(404,"Assignment not found")
+    s.delete(assignment);s.commit()
+@app.get("/api/student/problem-assignments")
+def student_problem_assignments(u:User=Depends(current),s:Session=Depends(db)):
+    require_role(u,"student")
+    rows=s.execute(select(ProblemAssignment,User,Question).join(User,User.id==ProblemAssignment.faculty_id).join(Question,Question.id==ProblemAssignment.question_id).where(ProblemAssignment.student_id==u.id).order_by(ProblemAssignment.created_at.desc())).all()
+    return [{"id":assignment.id,"faculty_email":faculty.email,"question_id":question.id,"question_title":question.title,"slug":question.slug,"difficulty":question.difficulty,"topic":question.topic,"due_at":assignment.due_at,"note":assignment.note,"created_at":assignment.created_at,"completed":bool(s.scalar(select(Progress.id).where(Progress.user_id==u.id,Progress.question_id==question.id,Progress.solved==True)))} for assignment,faculty,question in rows]
 @app.post("/api/courses/{course_id}/students",status_code=201)
 def map_student(course_id:int,registration_number:str,u:User=Depends(current),s:Session=Depends(db)):
     c=s.get(Course,course_id)
     if not c: raise HTTPException(404,"Course not found")
-    if u.role=="faculty" and c.faculty_id!=u.id: raise HTTPException(403,"Not your course")
+    if u.role=="faculty" and c.faculty_id not in (None,u.id): raise HTTPException(403,"Not your course")
     require_role(u,"admin","faculty")
-    student=s.scalar(select(User).where(User.registration_number==registration_number,User.role=="student"))
+    student=s.scalar(select(User).where(User.registration_number==registration_number.strip(),User.role=="student"))
     if not student: raise HTTPException(404,"Student registration number not found")
     if s.scalar(select(Enrollment).where(Enrollment.course_id==course_id,Enrollment.student_id==student.id)): raise HTTPException(409,"Student is already mapped")
-    s.add(Enrollment(course_id=course_id,student_id=student.id,faculty_id=c.faculty_id));s.commit();return {"course_id":course_id,"student_id":student.id}
+    faculty_id=c.faculty_id or u.id
+    if not s.scalar(select(FacultyStudent).where(FacultyStudent.faculty_id==faculty_id,FacultyStudent.student_id==student.id)): s.add(FacultyStudent(faculty_id=faculty_id,student_id=student.id))
+    s.add(Enrollment(course_id=course_id,student_id=student.id,faculty_id=faculty_id));s.commit();return {"course_id":course_id,"student_id":student.id}
 @app.post("/api/courses/{course_id}/questions",status_code=201)
 def add_course_question(course_id:int,question_id:int,u:User=Depends(current),s:Session=Depends(db)):
     c=s.get(Course,course_id)
-    if not c or (u.role=="faculty" and c.faculty_id!=u.id): raise HTTPException(404,"Course not found")
+    if not c or (u.role=="faculty" and c.faculty_id not in (None,u.id)): raise HTTPException(404,"Course not found")
     require_role(u,"admin","faculty")
     if not s.get(Question,question_id): raise HTTPException(404,"Question not found")
     if s.get(CourseQuestion,{"course_id":course_id,"question_id":question_id}): raise HTTPException(409,"Question already mapped")
     s.add(CourseQuestion(course_id=course_id,question_id=question_id,position=s.scalar(select(func.count()).select_from(CourseQuestion).where(CourseQuestion.course_id==course_id))));s.commit();return {"ok":True}
+@app.get("/api/courses/{course_id}/questions")
+def course_questions(course_id:int,u:User=Depends(current),s:Session=Depends(db)):
+    c=s.get(Course,course_id)
+    if not c: raise HTTPException(404,"Course not found")
+    if u.role=="faculty" and c.faculty_id not in (None,u.id): raise HTTPException(404,"Course not found")
+    require_role(u,"admin","faculty")
+    rows=s.execute(select(Question).join(CourseQuestion,CourseQuestion.question_id==Question.id).where(CourseQuestion.course_id==course_id).order_by(CourseQuestion.position)).scalars().all()
+    return [{"id":q.id,"title":q.title,"slug":q.slug,"difficulty":q.difficulty,"topic":q.topic} for q in rows]
 @app.get("/api/courses/{course_id}/progress")
 def course_progress(course_id:int,u:User=Depends(current),s:Session=Depends(db)):
     c=s.get(Course,course_id)
     if not c: raise HTTPException(404,"Course not found")
+    if u.role=="faculty" and c.faculty_id not in (None,u.id): raise HTTPException(404,"Course not found")
+    require_role(u,"admin","faculty","student")
     enrolled=s.scalar(select(Enrollment).where(Enrollment.course_id==course_id,Enrollment.student_id==u.id))
     if u.role=="student" and not enrolled: raise HTTPException(403,"Not enrolled in this course")
     qids=list(s.scalars(select(CourseQuestion.question_id).where(CourseQuestion.course_id==course_id))); students=[u.id] if u.role=="student" else list(s.scalars(select(Enrollment.student_id).where(Enrollment.course_id==course_id)))
-    return [{"student_id":sid,"solved":s.scalar(select(func.count()).select_from(Progress).where(Progress.user_id==sid,Progress.question_id.in_(qids),Progress.solved==True)) or 0,"total":len(qids)} for sid in students]
+    rows=[]
+    for sid in students:
+      student=s.get(User,sid)
+      solved=s.scalar(select(func.count()).select_from(Progress).where(Progress.user_id==sid,Progress.question_id.in_(qids),Progress.solved==True)) if qids else 0
+      attempts=s.scalar(select(func.sum(Progress.attempts)).where(Progress.user_id==sid,Progress.question_id.in_(qids))) if qids else 0
+      submissions=s.scalar(select(func.count()).select_from(Submission).where(Submission.user_id==sid,Submission.question_id.in_(qids))) if qids else 0
+      last_active=s.scalar(select(func.max(Submission.created_at)).where(Submission.user_id==sid,Submission.question_id.in_(qids))) if qids else None
+      rows.append({"student_id":sid,"email":student.email,"registration_number":student.registration_number,"solved":solved or 0,"total":len(qids),"attempts":attempts or 0,"submissions":submissions,"last_active":last_active})
+    return rows
 @app.post("/api/assessments",status_code=201)
 def create_assessment(body:AssessmentIn,u:User=Depends(current),s:Session=Depends(db)):
     require_role(u,"faculty");c=s.get(Course,body.course_id)
-    if not c or c.faculty_id!=u.id: raise HTTPException(404,"Course not found")
+    if not c or c.faculty_id not in (None,u.id): raise HTTPException(404,"Course not found")
     a=Assessment(course_id=c.id,faculty_id=u.id,title=body.title,description=body.description,starts_at=body.starts_at,ends_at=body.ends_at);s.add(a);s.flush()
     for qid in body.question_ids:
       if not s.get(Question,qid): raise HTTPException(422,"Unknown question")
@@ -483,18 +650,37 @@ def create_assessment(body:AssessmentIn,u:User=Depends(current),s:Session=Depend
 def publish_assessment(assessment_id:int,u:User=Depends(current),s:Session=Depends(db)):
     a=s.get(Assessment,assessment_id)
     if not a or a.faculty_id!=u.id: raise HTTPException(404,"Assessment not found")
-    require_role(u,"faculty");a.published=True;s.commit();return {"id":a.id,"published":True}
+    require_role(u,"faculty")
+    if not s.scalar(select(AssessmentQuestion.question_id).where(AssessmentQuestion.assessment_id==a.id).limit(1)):
+      raise HTTPException(422,"Add at least one question before publishing this assessment")
+    a.published=True;s.commit();return {"id":a.id,"published":True}
 @app.get("/api/assessments")
 def assessments(u:User=Depends(current),s:Session=Depends(db)):
     if u.role=="faculty": rows=s.scalars(select(Assessment).where(Assessment.faculty_id==u.id)).all()
     elif u.role=="student": rows=s.scalars(select(Assessment).join(Enrollment,Enrollment.course_id==Assessment.course_id).where(Enrollment.student_id==u.id,Assessment.published==True)).all()
     else: rows=s.scalars(select(Assessment)).all()
     return [{"id":a.id,"course_id":a.course_id,"title":a.title,"description":a.description,"starts_at":a.starts_at,"ends_at":a.ends_at,"published":a.published} for a in rows]
+@app.get("/api/assessments/{assessment_id}/questions")
+def assessment_questions(assessment_id:int,u:User=Depends(current),s:Session=Depends(db)):
+    a=s.get(Assessment,assessment_id)
+    if not a or not a.published: raise HTTPException(404,"Assessment not found")
+    if u.role=="faculty" and a.faculty_id!=u.id: raise HTTPException(404,"Assessment not found")
+    require_role(u,"faculty","student")
+    if u.role=="student":
+      if not s.scalar(select(Enrollment).where(Enrollment.course_id==a.course_id,Enrollment.student_id==u.id)): raise HTTPException(403,"Not enrolled")
+      now=datetime.utcnow()
+      if a.starts_at and now<a.starts_at: raise HTTPException(409,"This assessment has not started yet")
+      if a.ends_at and now>a.ends_at: raise HTTPException(410,"This assessment has ended")
+    rows=s.execute(select(Question).join(AssessmentQuestion,AssessmentQuestion.question_id==Question.id).where(AssessmentQuestion.assessment_id==a.id).order_by(Question.id)).scalars().all()
+    return [{"id":q.id,"title":q.title,"slug":q.slug,"difficulty":q.difficulty,"topic":q.topic} for q in rows]
 @app.post("/api/assessments/{assessment_id}/submit",status_code=201)
 def submit_assessment(assessment_id:int,u:User=Depends(current),s:Session=Depends(db)):
     require_role(u,"student");a=s.get(Assessment,assessment_id)
     if not a or not a.published: raise HTTPException(404,"Assessment not found")
     if not s.scalar(select(Enrollment).where(Enrollment.course_id==a.course_id,Enrollment.student_id==u.id)): raise HTTPException(403,"Not enrolled")
+    now=datetime.utcnow()
+    if a.starts_at and now<a.starts_at: raise HTTPException(409,"This assessment has not started yet")
+    if a.ends_at and now>a.ends_at: raise HTTPException(410,"This assessment has ended")
     qids=list(s.scalars(select(AssessmentQuestion.question_id).where(AssessmentQuestion.assessment_id==a.id))); score=s.scalar(select(func.count()).select_from(Progress).where(Progress.user_id==u.id,Progress.question_id.in_(qids),Progress.solved==True)) or 0
     attempt=s.scalar(select(AssessmentAttempt).where(AssessmentAttempt.assessment_id==a.id,AssessmentAttempt.student_id==u.id)) or AssessmentAttempt(assessment_id=a.id,student_id=u.id)
     attempt.score=score;attempt.submitted_at=datetime.utcnow();s.add(attempt);s.commit();return {"assessment_id":a.id,"score":score,"out_of":len(qids)}
@@ -506,8 +692,12 @@ def assessment_results(assessment_id:int,u:User=Depends(current),s:Session=Depen
     if u.role=="student":
       x=s.scalar(select(AssessmentAttempt).where(AssessmentAttempt.assessment_id==a.id,AssessmentAttempt.student_id==u.id))
       if not x or not x.shared: raise HTTPException(403,"Results are not shared yet")
-      return {"score":x.score,"submitted_at":x.submitted_at}
-    require_role(u,"admin","faculty");return [{"student_id":x.student_id,"score":x.score,"submitted_at":x.submitted_at,"shared":x.shared} for x in s.scalars(select(AssessmentAttempt).where(AssessmentAttempt.assessment_id==a.id))]
+      total=s.scalar(select(func.count()).select_from(AssessmentQuestion).where(AssessmentQuestion.assessment_id==a.id)) or 0
+      return {"score":x.score,"out_of":total,"submitted_at":x.submitted_at}
+    require_role(u,"admin","faculty")
+    total=s.scalar(select(func.count()).select_from(AssessmentQuestion).where(AssessmentQuestion.assessment_id==a.id)) or 0
+    rows=s.execute(select(AssessmentAttempt,User).join(User,User.id==AssessmentAttempt.student_id).where(AssessmentAttempt.assessment_id==a.id).order_by(AssessmentAttempt.submitted_at.desc())).all()
+    return [{"student_id":attempt.student_id,"email":student.email,"registration_number":student.registration_number,"score":attempt.score,"out_of":total,"submitted_at":attempt.submitted_at,"shared":attempt.shared} for attempt,student in rows]
 @app.patch("/api/assessments/{assessment_id}/share-results")
 def share_results(assessment_id:int,u:User=Depends(current),s:Session=Depends(db)):
     a=s.get(Assessment,assessment_id)

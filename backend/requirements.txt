@@ -1,6 +1,8 @@
 fastapi==0.115.12
 uvicorn[standard]==0.34.2
 sqlalchemy==2.0.41
+psycopg[binary]>=3.2,<4
+python-dotenv>=1.0,<2
 # 2.14 ships a prebuilt pydantic-core wheel for CPython 3.14 on Windows.
 pydantic==2.14.1
 pwdlib[argon2]==0.2.1

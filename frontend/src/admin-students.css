@@ -1,0 +1,90 @@
+@import './white-accent.css';
+
+.admin-students-page{max-width:1500px;margin:0 auto;padding:28px 28px 42px;color:#f4f3f0}
+.admin-students-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:4px 0 22px}
+.admin-students-eyebrow{color:#a69b85;font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+.admin-students-heading h1{margin:7px 0 4px;font-size:32px;letter-spacing:-.055em;line-height:1.1}
+.admin-students-heading p{margin:0;color:#9d9b95;font-size:12px}
+.admin-students-actions{display:flex;align-items:center;gap:10px}
+.admin-directory-primary,.admin-directory-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:9px 13px;border:1px solid #ffffff20;border-radius:8px;background:#ffffff08;color:#e7e5df;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:background .16s,border-color .16s}
+.admin-directory-primary{border-color:#e6c688;background:#e6c688;color:#18140e;font-weight:750}
+.admin-directory-primary:hover{background:#f0d49f}
+.admin-directory-secondary:hover{border-color:#e6c68880;background:#ffffff10}
+.admin-directory-primary:disabled,.admin-directory-secondary:disabled{opacity:.5;cursor:wait}
+.admin-directory-primary svg,.admin-directory-secondary svg{width:15px;height:15px}
+.admin-student-filters{display:grid;grid-template-columns:minmax(230px,1.55fr) repeat(4,minmax(115px,1fr)) auto;align-items:end;gap:10px;margin-bottom:15px;padding:15px;border:1px solid #ffffff17;border-radius:12px;background:linear-gradient(145deg,#ffffff0c,#ffffff05);box-shadow:inset 0 1px #ffffff08}
+.admin-student-filters label{display:grid;min-width:0;gap:6px;color:#aaa8a1;font-size:9px;font-weight:750;text-transform:uppercase;letter-spacing:.08em}
+.admin-student-filters label>div{display:flex;align-items:center;gap:8px;min-width:0;height:38px;padding:0 10px;border:1px solid #ffffff1c;border-radius:7px;background:#0e0e0e;color:#8e8c86}
+.admin-student-filters label>div svg{width:15px;height:15px;flex:none}
+.admin-student-filters input,.admin-student-filters select{width:100%;min-width:0;height:38px;padding:0 10px;border:1px solid #ffffff1c;border-radius:7px;outline:0;background:#0e0e0e;color:#eee;font:500 10px inherit}
+.admin-student-filters label>div input{height:auto;padding:0;border:0;background:transparent}
+.admin-student-filters input:focus,.admin-student-filters select:focus,.admin-student-filters label>div:focus-within{border-color:#dfb9719c;box-shadow:0 0 0 3px #dfb97115}
+.admin-student-filters input::placeholder{color:#77756f}
+.admin-student-clear{height:38px;padding:0 11px;border:1px solid #ffffff1c;border-radius:7px;background:#ffffff07;color:#c5c2bb;font-size:10px;font-weight:700;cursor:pointer}
+.admin-student-clear:hover:not(:disabled){border-color:#ffffff40;background:#ffffff10}
+.admin-student-clear:disabled{opacity:.42;cursor:default}
+.admin-student-directory{overflow:hidden;border:1px solid #ffffff19;border-radius:13px;background:linear-gradient(145deg,#ffffff0c,#ffffff05);box-shadow:inset 0 1px #ffffff09,0 16px 40px #0003}
+.admin-student-directory>header{display:flex;align-items:center;justify-content:space-between;min-height:62px;padding:14px 17px;border-bottom:1px solid #ffffff13;background:#ffffff03}
+.admin-student-directory>header h2{margin:5px 0 0;font-size:15px;letter-spacing:-.025em}
+.admin-student-result-count{color:#898781;font-size:9px}
+.admin-student-table-scroll{overflow-x:auto}
+.admin-student-table-scroll table{width:100%;min-width:810px;border-collapse:collapse;text-align:left}
+.admin-student-table-scroll th{height:43px;padding:0 14px;border-bottom:1px solid #ffffff16;color:#999790;font-size:9px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;white-space:nowrap}
+.admin-student-table-scroll td{height:58px;padding:8px 14px;border-bottom:1px solid #ffffff0c;color:#c9c7c1;font-size:10px;white-space:nowrap}
+.admin-student-table-scroll tbody tr:hover{background:#ffffff05}
+.admin-student-table-scroll tbody tr:last-child td{border-bottom:0}
+.admin-reg-number{color:#e6c688!important;font-weight:750;letter-spacing:.03em}
+.admin-student-identity{display:flex;align-items:center;gap:9px;min-width:185px}
+.admin-student-identity>span{display:grid;place-items:center;flex:none;width:31px;height:31px;border:1px solid #dfb97128;border-radius:50%;background:#dfb97112;color:#e6c688}
+.admin-student-identity svg{width:14px;height:14px}
+.admin-student-identity>div{display:grid;gap:3px;min-width:0}
+.admin-student-identity b{max-width:190px;overflow:hidden;color:#eee;font-size:10px;text-overflow:ellipsis}
+.admin-student-identity small{max-width:210px;overflow:hidden;color:#85837d;font-size:9px;text-overflow:ellipsis}
+.admin-approval-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid #ffffff12;border-radius:999px;background:#ffffff06;color:#c7c4bc;font-size:9px;font-weight:700}
+.admin-approval-badge i{width:6px;height:6px;border-radius:50%;background:#e6c688}
+.admin-approval-badge.approved{border-color:#76cf9e28;background:#76cf9e0d;color:#9ddbb7}
+.admin-approval-badge.approved i{background:#76cf9e}
+.admin-approval-badge.pending{border-color:#e6c68830;background:#e6c6880c;color:#e6c688}
+.admin-approval-badge.pending i{background:#e6c688}
+.admin-student-edit{padding:6px 9px;border:1px solid #ffffff20;border-radius:6px;background:#ffffff07;color:#d8d5ce;font-size:9px;font-weight:700;cursor:pointer}
+.admin-student-edit:hover{border-color:#e6c68870;color:#f0d49f}
+.admin-student-empty{display:grid;place-items:center;gap:8px;min-height:170px;padding:24px;text-align:center;color:#918f89;font-size:10px}
+.admin-student-empty>svg{width:21px;height:21px;color:#c9aa74}
+.admin-student-empty b{color:#dedbd4;font-size:11px}
+.admin-student-empty span{max-width:360px;line-height:1.5}
+.admin-student-empty.admin-student-error{color:#ffa0a0}
+.admin-student-spinner{width:18px;height:18px;border:2px solid #ffffff20;border-top-color:#e6c688;border-radius:50%;animation:admin-student-spin .8s linear infinite}
+@keyframes admin-student-spin{to{transform:rotate(360deg)}}
+.admin-student-directory>footer{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:9px 15px;border-top:1px solid #ffffff12;color:#a09e98;font-size:10px}
+.admin-student-directory>footer>div{display:flex;gap:7px}
+.admin-student-directory>footer button{display:inline-flex;align-items:center;gap:5px;padding:7px 9px;border:1px solid #ffffff18;border-radius:6px;background:#ffffff06;color:#d2cfc8;font-size:9px;font-weight:650;cursor:pointer}
+.admin-student-directory>footer button svg{width:12px;height:12px}
+.admin-student-directory>footer button:disabled{opacity:.4;cursor:default}
+.admin-directory-modal-backdrop{position:fixed;inset:0;z-index:30;display:grid;place-items:center;overflow:auto;padding:20px;background:#000b;backdrop-filter:blur(7px)}
+.admin-directory-modal{position:relative;width:min(630px,100%);max-height:min(90vh,850px);overflow:auto;padding:25px;border:1px solid #ffffff25;border-radius:14px;background:radial-gradient(circle at 90% 0,#322a1c 0,transparent 32%),#121211;box-shadow:0 25px 90px #000b}
+.admin-directory-modal h2{margin:7px 0 5px;font-size:22px;letter-spacing:-.04em}
+.admin-directory-modal>p{margin:0 0 18px;color:#999790;font-size:11px;line-height:1.55}
+.admin-directory-modal-close{position:absolute;top:16px;right:16px;display:grid;place-items:center;width:31px;height:31px;border:1px solid #ffffff20;border-radius:7px;background:#ffffff07;color:#d5d2cb;cursor:pointer}
+.admin-directory-modal-close svg{width:15px;height:15px}
+.admin-student-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.admin-student-form-grid label{display:grid;gap:6px;color:#bdbab2;font-size:10px;font-weight:650}
+.admin-student-form-grid input,.admin-student-form-grid select,.admin-add-department-form input,.admin-department-list input{width:100%;min-width:0;height:38px;padding:0 10px;border:1px solid #ffffff20;border-radius:7px;outline:0;background:#0d0d0d;color:#f0efeb;font-size:10px}
+.admin-student-form-grid input:focus,.admin-student-form-grid select:focus,.admin-add-department-form input:focus,.admin-department-list input:focus{border-color:#dfb9719c;box-shadow:0 0 0 3px #dfb97115}
+.admin-student-form-grid input:disabled{opacity:.55}
+.admin-directory-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:19px}
+.admin-student-form-error{margin:12px 0 0;color:#ffa0a0;font-size:10px}
+.admin-academic-modal{width:min(690px,100%)}
+.admin-add-department-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:17px 0}
+.admin-department-list{display:grid;gap:9px;max-height:47vh;overflow:auto}
+.admin-department-list article{display:grid;grid-template-columns:minmax(110px,.7fr) minmax(120px,1fr) minmax(180px,1.3fr);align-items:center;gap:12px;padding:12px;border:1px solid #ffffff14;border-radius:9px;background:#ffffff05}
+.admin-department-list article>div:first-child{display:grid;gap:4px;min-width:0}
+.admin-department-list article>div:first-child b{overflow:hidden;color:#eee;font-size:10px;text-overflow:ellipsis}
+.admin-department-list article>div:first-child small{color:#88867f;font-size:9px}
+.admin-section-chips{display:flex;flex-wrap:wrap;gap:5px}
+.admin-section-chips span{padding:4px 7px;border:1px solid #dfb97123;border-radius:999px;background:#dfb9710c;color:#d9c08f;font-size:9px}
+.admin-department-list article form{display:flex;gap:6px;min-width:0}
+.admin-department-list article form button{flex:none;min-height:34px;padding:6px 9px;font-size:9px}
+.admin-department-list article form button svg{width:12px;height:12px}
+@media(max-width:1100px){.admin-student-filters{grid-template-columns:repeat(3,minmax(0,1fr))}.admin-student-search{grid-column:span 2}}
+@media(max-width:760px){.admin-students-page{padding:22px 15px 32px}.admin-students-heading{align-items:flex-start;flex-direction:column}.admin-students-actions{width:100%;flex-wrap:wrap}.admin-student-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-student-search{grid-column:1/-1}.admin-student-clear{width:100%}.admin-department-list article{grid-template-columns:1fr 1fr}.admin-department-list article form{grid-column:1/-1}}
+@media(max-width:480px){.admin-students-heading h1{font-size:28px}.admin-students-actions>*{flex:1;font-size:9px}.admin-student-filters{grid-template-columns:1fr;padding:12px}.admin-student-search{grid-column:auto}.admin-student-directory>header{padding:12px}.admin-directory-modal{padding:21px 16px}.admin-student-form-grid{grid-template-columns:1fr}.admin-add-department-form{grid-template-columns:1fr}.admin-department-list article{grid-template-columns:1fr}.admin-department-list article form{grid-column:auto}}
