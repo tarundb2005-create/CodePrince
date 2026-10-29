@@ -8,3 +8,8 @@ __pycache__/
 *.py[cod]
 dist/
 build/
+
+cookies.txt
+dsa_forge.db
+frontend/tsconfig.node.tsbuildinfo
+frontend/tsconfig.tsbuildinfo

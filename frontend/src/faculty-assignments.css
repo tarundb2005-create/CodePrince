@@ -1,0 +1,77 @@
+@import './admin-modal.css';
+
+.faculty-problem-assignment-form{margin-bottom:14px}
+.faculty-problem-create-form{margin-bottom:14px}
+.faculty-problem-statement{min-height:84px;resize:vertical;font:inherit}
+.faculty-problem-bank{margin-bottom:14px}
+.faculty-problem-search{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;border:1px solid #ffffff1c;border-radius:8px;background:#0e0e0e;color:#8e8c86}
+.faculty-problem-search:focus-within{border-color:#dfb971cc;box-shadow:0 0 0 3px #dfb97115}
+.faculty-problem-search svg{width:15px;height:15px;flex:none}.faculty-problem-search input{width:100%;height:auto;padding:0;border:0;outline:0;background:transparent;color:#eee;font:500 10px inherit}.faculty-problem-search input::placeholder{color:#77756f}
+.faculty-problem-bank-list{display:grid;margin-top:12px}.faculty-problem-bank-list article{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 2px;border-top:1px solid #ffffff0d}.faculty-problem-bank-list article>div{display:grid;gap:4px;min-width:0}.faculty-problem-bank-list b{overflow:hidden;font-size:11px;text-overflow:ellipsis;white-space:nowrap}.faculty-problem-bank-list small{color:#85847e;font-size:9px}.faculty-problem-bank-list button{flex:none;padding:8px 10px}.faculty-problem-bank-list button svg{width:12px;height:12px}
+.faculty-problem-row-actions{display:flex!important;align-items:center;gap:8px;flex:none}.faculty-problem-row-actions button{min-height:30px;padding:7px 10px;font-size:9px}
+
+.faculty-publish-modal-backdrop{position:fixed;inset:0;z-index:40;display:grid;place-items:center;overflow:auto;padding:24px;background:#000c;backdrop-filter:blur(8px)}
+.faculty-publish-modal{position:relative;width:min(680px,100%);max-height:min(90vh,820px);display:flex;flex-direction:column;border:1px solid #ffffff20;border-radius:14px;background:radial-gradient(circle at 90% 0,#322a1c 0,transparent 35%),#121211;box-shadow:0 25px 90px #000c,inset 0 1px #ffffff0a}
+.faculty-publish-modal-header{position:sticky;top:0;z-index:10;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 24px 16px;border-bottom:1px solid #ffffff15;background:radial-gradient(circle at 90% 0,#322a1c 0,transparent 35%),#121211;border-radius:14px 14px 0 0}
+.faculty-publish-modal-header-content{flex:1;min-width:0}
+.faculty-publish-modal-header .admin-modal-eyebrow{color:#a69b85;font-size:8px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px}
+.faculty-publish-modal-header h2{margin:0 0 4px;font-size:20px;letter-spacing:-.03em;line-height:1.2;color:#f4f3f0}
+.faculty-publish-modal-header p{margin:0;color:#999790;font-size:11px;line-height:1.5}
+.faculty-publish-modal-close{position:relative;flex:none;display:grid;place-items:center;width:32px;height:32px;border:1px solid #ffffff20;border-radius:8px;background:#ffffff08;color:#d5d2cb;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.faculty-publish-modal-close:hover{border-color:#ffffff40;background:#ffffff12;color:#f4f3f0}
+.faculty-publish-modal-close svg{width:16px;height:16px}
+.faculty-publish-modal-body{flex:1;overflow:auto;padding:20px 24px 0;min-height:0}
+.faculty-publish-modal-footer{position:sticky;bottom:0;z-index:10;display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 24px 20px;border-top:1px solid #ffffff15;background:#121211;border-radius:0 0 14px 14px;margin-top:auto}
+
+.faculty-publish-student-list{display:grid;gap:7px;margin-top:16px;padding-top:13px;border-top:1px solid #ffffff12}
+.faculty-publish-student-list label{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #ffffff14;border-radius:8px;background:#ffffff05;cursor:pointer;transition:background .15s,border-color .15s}
+.faculty-publish-student-list label:hover{background:#ffffff0a;border-color:#ffffff1c}
+.faculty-publish-student-list label.selected{border-color:#dfb97178;background:#dfb9710d}
+.faculty-publish-student-list label .admin-checkbox-label{cursor:pointer}
+.faculty-publish-student-list label>span{display:grid;gap:2px;min-width:0}
+.faculty-publish-student-list b{color:#e8e6e0;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.faculty-publish-student-list small{color:#85837d;font-size:8.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.faculty-assignment-student-picker{margin-top:16px;padding-top:16px;border-top:1px solid #ffffff12}
+.faculty-assignment-student-picker>div:first-child{display:grid;gap:5px;margin-bottom:10px}
+.faculty-assignment-student-picker>div:first-child b{font-size:11px;color:#eee}
+.faculty-assignment-student-picker>div:first-child small{color:#85847e;font-size:9px}
+.faculty-assignment-student-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px}
+.faculty-assignment-student-grid label{display:flex;align-items:center;gap:10px;min-width:0;padding:9px 12px;border:1px solid #ffffff14;border-radius:8px;background:#ffffff05;color:#d7d4cd;cursor:pointer;transition:background .15s,border-color .15s}
+.faculty-assignment-student-grid label:hover,.faculty-assignment-student-grid label.selected{border-color:#dfb97178;background:#dfb9710d}
+.faculty-assignment-student-grid .admin-checkbox-label{cursor:pointer}
+.faculty-assignment-student-grid .faculty-avatar{width:28px;height:28px;font-size:9px}
+.faculty-assignment-student-grid label>span:last-child{display:grid;gap:2px;min-width:0}
+.faculty-assignment-student-grid b{color:#e8e6e0;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.faculty-assignment-student-grid small{color:#85837d;font-size:8.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.faculty-assignment-list{margin-top:14px}
+.faculty-assignment-rows{display:grid;gap:0}
+.faculty-assignment-rows article{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(150px,1fr) minmax(120px,.7fr) 28px;align-items:center;gap:15px;padding:13px 2px;border-top:1px solid #ffffff0d}
+.faculty-assignment-question{min-width:0}
+.faculty-assignment-question h3{margin:6px 0 4px;overflow:hidden;font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+.faculty-assignment-question p{margin:0;overflow:hidden;color:#85847e;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+.faculty-assignment-status{display:inline-flex;padding:4px 7px;border:1px solid #ffffff18;border-radius:999px;font-size:8px;font-weight:750}
+.faculty-assignment-status.open{border-color:#dfb9713e;background:#dfb9710c;color:#e6c688}
+.faculty-assignment-status.complete{border-color:#76cf9e38;background:#76cf9e0d;color:#99d5ad}
+.faculty-assignment-student{display:flex;align-items:center;gap:8px;min-width:0}
+.faculty-assignment-student .faculty-avatar{width:28px;height:28px;font-size:8px}
+.faculty-assignment-student>span:last-child{display:grid;gap:3px;min-width:0}
+.faculty-assignment-student b,.faculty-assignment-student small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.faculty-assignment-student b{font-size:10px}.faculty-assignment-student small{color:#85847e;font-size:9px}
+.faculty-assignment-due{display:grid;gap:4px}.faculty-assignment-due small{color:#85847e;font-size:9px}.faculty-assignment-due b{font-size:9px;font-weight:550;color:#c5c2ba}
+.faculty-assignment-remove{display:grid;place-items:center;width:27px;height:27px;border:1px solid #ffffff1c;border-radius:6px;background:#ffffff06;color:#a6a39c;cursor:pointer}.faculty-assignment-remove:hover{border-color:#ff9c9c66;color:#ffaaaa}.faculty-assignment-remove svg{width:13px}
+@media(max-width:760px){.faculty-assignment-rows article{grid-template-columns:minmax(0,1fr) 28px;gap:10px}.faculty-assignment-student,.faculty-assignment-due{grid-column:1}.faculty-assignment-remove{grid-column:2;grid-row:1/3;align-self:center}}
+.faculty-assignment-filters{display:grid;grid-template-columns:minmax(190px,1.5fr) repeat(3,minmax(120px,1fr)) auto;align-items:end;gap:9px;margin:3px 0 12px}
+.faculty-assignment-filters label{display:grid;min-width:0;gap:5px;color:#aaa9a3;font-size:9px;font-weight:700}
+.faculty-assignment-filters label>span{text-transform:uppercase;letter-spacing:.07em}
+.faculty-assignment-filters select,.faculty-assignment-filters input{width:100%;min-width:0;height:38px;padding:0 12px;border:1px solid #ffffff1c;border-radius:8px;outline:0;background:#0e0e0e;color:#eee;font:500 10px inherit}
+.faculty-assignment-search{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;border:1px solid #ffffff1c;border-radius:8px;background:#0e0e0e;color:#8e8c86}
+.faculty-assignment-search:focus-within{border-color:#dfb971cc;box-shadow:0 0 0 3px #dfb97115}
+.faculty-assignment-search svg{width:15px;height:15px;flex:none}.faculty-assignment-search input{width:100%;height:auto;padding:0;border:0;outline:0;background:transparent;color:#eee;font:500 10px inherit}.faculty-assignment-search input::placeholder{color:#77756f}
+.faculty-assignment-table-wrap .faculty-table{min-width:850px}.faculty-assignment-table-wrap .faculty-table th{height:40px;white-space:nowrap}.faculty-assignment-table-wrap .faculty-table td{height:58px;white-space:nowrap}
+.faculty-assignment-table-problem{display:grid;gap:4px;min-width:160px}.faculty-assignment-table-problem b{overflow:hidden;font-size:10px;text-overflow:ellipsis;white-space:nowrap}.faculty-assignment-table-problem small{color:#85847e;font-size:9px}
+.faculty-assignment-table-wrap .faculty-assignment-remove{margin:auto}
+@media(max-width:1080px){.faculty-assignment-filters{grid-template-columns:repeat(3,minmax(0,1fr))}.faculty-assignment-search{grid-column:span 2}.faculty-assignment-filters .faculty-directory-clear{width:100%}}
+@media(max-width:760px){.faculty-assignment-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.faculty-assignment-search{grid-column:1/-1}}
+@media(max-width:460px){.faculty-assignment-filters{grid-template-columns:1fr}.faculty-assignment-search{grid-column:auto}}

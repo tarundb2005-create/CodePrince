@@ -12,13 +12,15 @@ services:
       - "8001:8000"
     volumes:
       - ./backend:/app
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.soc
+
     environment:
       DATABASE_URL: sqlite:///./dsa_forge.db
       CORS_ORIGINS: http://localhost:5174
       EXECUTOR_IMAGE: dsa-forge-executor:local
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change-this-password}
+
 
   web:
     build: ./frontend

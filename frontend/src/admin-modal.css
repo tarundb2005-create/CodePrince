@@ -1,0 +1,1329 @@
+/**
+ * Shared Modal Design System for CodePrince Admin
+ * Single source of truth for all admin modal styling
+ */
+
+@import './white-accent.css';
+
+/* ==========================================================================
+   Modal Backdrop & Base Modal
+   ========================================================================== */
+
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 24px;
+  background: #000c;
+  backdrop-filter: blur(8px);
+  animation: admin-modal-backdrop-in 0.15s ease-out;
+}
+
+@keyframes admin-modal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.admin-modal {
+  position: relative;
+  width: min(680px, 100%);
+  max-height: min(90vh, 820px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ffffff20;
+  border-radius: 14px;
+  background: radial-gradient(circle at 90% 0, #322a1c 0, transparent 35%), #121211;
+  box-shadow: 0 25px 90px #000c, inset 0 1px #ffffff0a;
+  animation: admin-modal-in 0.18s ease-out;
+}
+
+@keyframes admin-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Modal width variants */
+.admin-modal-sm {
+  width: min(480px, 100%);
+}
+
+.admin-modal-md {
+  width: min(680px, 100%);
+}
+
+.admin-modal-lg {
+  width: min(780px, 100%);
+}
+
+.admin-modal-xl {
+  width: min(900px, 100%);
+}
+
+/* ==========================================================================
+   Modal Header (Fixed/Sticky)
+   ========================================================================== */
+
+.admin-modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #ffffff15;
+  background: radial-gradient(circle at 90% 0, #322a1c 0, transparent 35%), #121211;
+  border-radius: 14px 14px 0 0;
+}
+
+.admin-modal-header-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-modal-eyebrow {
+  display: inline-block;
+  color: #a69b85;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.admin-modal-header h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  letter-spacing: -.03em;
+  line-height: 1.2;
+  color: #f4f3f0;
+}
+
+.admin-modal-header p {
+  margin: 0;
+  color: #999790;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.admin-modal-close {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #ffffff20;
+  border-radius: 8px;
+  background: #ffffff08;
+  color: #d5d2cb;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.admin-modal-close:hover {
+  border-color: #ffffff40;
+  background: #ffffff12;
+  color: #f4f3f0;
+}
+
+.admin-modal-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ==========================================================================
+   Modal Body (Scrollable)
+   ========================================================================== */
+
+.admin-modal-body {
+  flex: 1;
+  overflow: auto;
+  padding: 20px 24px 0;
+  min-height: 0;
+}
+
+/* ==========================================================================
+   Modal Footer (Fixed/Sticky)
+   ========================================================================== */
+
+.admin-modal-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid #ffffff15;
+  background: #121211;
+  border-radius: 0 0 14px 14px;
+  margin-top: auto;
+}
+
+.admin-modal-footer-left {
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #7f7d77;
+  font-size: 10px;
+}
+
+/* ==========================================================================
+   Form Elements (Consistent with Design System)
+   ========================================================================== */
+
+.admin-modal-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-modal-form-grid label {
+  display: grid;
+  gap: 6px;
+  color: #bdbab2;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.admin-modal-form-grid input,
+.admin-modal-form-grid select,
+.admin-modal-form-grid textarea {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #ffffff20;
+  border-radius: 8px;
+  outline: 0;
+  background: #0d0d0d;
+  color: #f0efeb;
+  font: 500 10px inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.admin-modal-form-grid select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8c86' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 36px;
+}
+
+.admin-modal-form-grid input:focus,
+.admin-modal-form-grid select:focus,
+.admin-modal-form-grid textarea:focus {
+  border-color: #dfb971cc;
+  box-shadow: 0 0 0 3px #dfb97115;
+}
+
+.admin-modal-form-grid input:disabled,
+.admin-modal-form-grid select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.admin-modal-form-grid input::placeholder,
+.admin-modal-form-grid select::placeholder {
+  color: #77756f;
+}
+
+.admin-modal-form-grid label>small {
+  color: #7f7d77;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.admin-modal-form-span-2 {
+  grid-column: 1 / -1;
+}
+
+.admin-modal-form-error {
+  margin: 10px 0 0;
+  color: #ffa0a0;
+  font-size: 10px;
+}
+
+.admin-modal-form-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 12px 0 0;
+  color: #88867f;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.admin-modal-form-note svg {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  margin-top: 1px;
+  color: #a69b85;
+}
+
+/* ==========================================================================
+   Button Variants
+   ========================================================================== */
+
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 9px 16px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.admin-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.admin-btn svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+/* Primary - Gold accent */
+.admin-btn-primary {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: #18140e;
+  font-weight: 750;
+}
+
+.admin-btn-primary:hover:not(:disabled) {
+  background: #f0d49f;
+  border-color: #f0d49f;
+}
+
+/* Secondary - Subtle */
+.admin-btn-secondary {
+  border-color: #ffffff20;
+  background: #ffffff08;
+  color: #e7e5df;
+}
+
+.admin-btn-secondary:hover:not(:disabled) {
+  border-color: #ffffff40;
+  background: #ffffff12;
+}
+
+/* Danger - Red */
+.admin-btn-danger {
+  border-color: #ff8c8c40;
+  background: #ff6b6b10;
+  color: #ffb0b0;
+}
+
+.admin-btn-danger:hover:not(:disabled) {
+  border-color: #ff8c8c70;
+  background: #ff6b6b18;
+  color: #ffd0d0;
+}
+
+/* Ghost - Minimal */
+.admin-btn-ghost {
+  border-color: transparent;
+  background: transparent;
+  color: #aaa8a1;
+  padding: 6px 10px;
+  min-height: 32px;
+  font-size: 10px;
+}
+
+.admin-btn-ghost:hover:not(:disabled) {
+  background: #ffffff10;
+  color: #f4f3f0;
+}
+
+/* Icon-only button */
+.admin-btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #ffffff20;
+  border-radius: 8px;
+  background: #ffffff08;
+  color: #c8c5be;
+}
+
+.admin-btn-icon:hover:not(:disabled) {
+  border-color: #ffffff40;
+  background: #ffffff12;
+  color: #f1efe9;
+}
+
+.admin-btn-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.admin-btn-icon.danger:hover:not(:disabled) {
+  border-color: #ff8c8c66;
+  background: #ff6b6b12;
+  color: #ffabab;
+}
+
+/* ==========================================================================
+   Search Input with Icon
+   ========================================================================== */
+
+.admin-search-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #ffffff1c;
+  border-radius: 8px;
+  background: #0e0e0e;
+  color: #8e8c86;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.admin-search-field:focus-within {
+  border-color: #dfb971cc;
+  box-shadow: 0 0 0 3px #dfb97115;
+}
+
+.admin-search-field svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: #77756f;
+}
+
+.admin-search-field input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #eee;
+  font: 500 10px inherit;
+}
+
+.admin-search-field input::placeholder {
+  color: #77756f;
+}
+
+/* ==========================================================================
+   Select Field (styled)
+   ========================================================================== */
+
+.admin-select-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #ffffff1c;
+  border-radius: 8px;
+  background: #0e0e0e;
+  color: #eee;
+  font: 500 10px inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.admin-select-field:focus-within {
+  border-color: #dfb971cc;
+  box-shadow: 0 0 0 3px #dfb97115;
+}
+
+.admin-select-field select {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  appearance: none;
+}
+
+.admin-select-field svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: #77756f;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Custom Checkbox (Accessible)
+   ========================================================================== */
+
+.admin-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.admin-checkbox-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.admin-checkbox-box {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #ffffff33;
+  border-radius: 4px;
+  background: #0d0d0d;
+  color: #18140e;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.admin-checkbox-input:focus-visible+.admin-checkbox-box {
+  outline: 2px solid #dfb971;
+  outline-offset: 2px;
+}
+
+.admin-checkbox-input:checked+.admin-checkbox-box {
+  border-color: #dfb971;
+  background: #dfb971;
+}
+
+.admin-checkbox-input:checked+.admin-checkbox-box svg {
+  display: block;
+}
+
+.admin-checkbox-box svg {
+  display: none;
+  width: 12px;
+  height: 12px;
+  stroke-width: 3;
+}
+
+.admin-checkbox-label:hover .admin-checkbox-box {
+  border-color: #ffffff60;
+}
+
+.admin-checkbox-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* ==========================================================================
+   Badge / Chip Components
+   ========================================================================== */
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border: 1px solid #ffffff12;
+  border-radius: 999px;
+  background: #ffffff06;
+  color: #c7c4bc;
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin-badge i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.admin-badge-success {
+  border-color: #76cf9e28;
+  background: #76cf9e0d;
+  color: #9ddbb7;
+}
+
+.admin-badge-success i {
+  background: #76cf9e;
+}
+
+.admin-badge-warning {
+  border-color: #ffffff30;
+  background: #ffffff0c;
+  color: #ffffff;
+}
+
+.admin-badge-warning i {
+  background: #ffffff;
+}
+
+.admin-badge-info {
+  border-color: #dfb97130;
+  background: #dfb9710d;
+  color: #d9c08f;
+}
+
+.admin-badge-info i {
+  background: #dfb971;
+}
+
+.admin-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border: 1px solid #ffffff1c;
+  border-radius: 999px;
+  background: #ffffff05;
+  color: #aaa8a1;
+  font-family: inherit;
+  font-size: 8px;
+  font-weight: 600;
+  cursor: default;
+}
+
+.admin-chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border: 1px solid #dfb97128;
+  border-radius: 999px;
+  background: #dfb9710c;
+  color: #ffffff;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+/* Year badges */
+.admin-year-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.admin-year-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border: 1px solid #dfb97123;
+  border-radius: 999px;
+  background: #dfb9710c;
+  color: #d9c08f;
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.admin-year-badge b {
+  font-weight: 800;
+}
+
+/* ==========================================================================
+   Student Row (for Mentee Modal)
+   ========================================================================== */
+
+.admin-student-row {
+  display: grid;
+  grid-template-columns: 36px 1fr minmax(140px, auto) minmax(120px, auto) minmax(100px, auto) minmax(80px, auto) minmax(140px, auto);
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #ffffff0c;
+  border-radius: 8px;
+  background: #ffffff04;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.admin-student-row:hover {
+  background: #ffffff08;
+  border-color: #ffffff14;
+}
+
+.admin-student-row.selected {
+  border-color: #dfb97140;
+  background: #dfb9710a;
+}
+
+.admin-student-row:focus-within {
+  border-color: #dfb971cc;
+  box-shadow: 0 0 0 2px #dfb97115;
+}
+
+.admin-student-row-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-student-row-main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.admin-student-row-main b {
+  color: #eee;
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-student-row-main small {
+  color: #85837d;
+  font-size: 8.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-student-row-meta {
+  display: grid;
+  gap: 2px;
+  color: #8d8b85;
+  font-size: 8.5px;
+  white-space: nowrap;
+}
+
+.admin-student-row-meta>span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-student-row-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  border: 1px solid #ffffff12;
+  border-radius: 999px;
+  background: #ffffff06;
+  color: #c7c4bc;
+  font-size: 8px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin-student-row-status.current {
+  border-color: #76cf9e30;
+  background: #76cf9e0d;
+  color: #9ddbb7;
+}
+
+.admin-student-row-status.moving {
+  border-color: #ffffff35;
+  background: #ffffff0d;
+  color: #e0bd7d;
+}
+
+.admin-student-row-status.none {
+  border-color: #ffffff18;
+  background: #ffffff05;
+  color: #88867f;
+}
+
+/* ==========================================================================
+   Current Mentees Section
+   ========================================================================== */
+
+.admin-current-mentees {
+  margin-bottom: 20px;
+}
+
+.admin-current-mentees-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.admin-current-mentees-header b {
+  color: #eee;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.admin-current-mentees-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid #dfb97130;
+  border-radius: 999px;
+  background: #dfb9710d;
+  color: #d9c08f;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.admin-current-mentees-list {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-current-mentee-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  border: 1px solid #ffffff14;
+  border-radius: 8px;
+  background: #ffffff05;
+}
+
+.admin-current-mentee-info {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.admin-current-mentee-info b {
+  color: #e8e6e0;
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-current-mentee-info small {
+  color: #85837d;
+  font-size: 8.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-current-mentee-action {
+  flex: none;
+}
+
+.admin-current-mentee-empty {
+  color: #88867f;
+  font-size: 9px;
+  padding: 12px;
+  text-align: center;
+}
+
+/* ==========================================================================
+   Department & Section Cards (Academic Setup Modal)
+   ========================================================================== */
+
+.admin-department-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #ffffff14;
+  border-radius: 10px;
+  background: #ffffff05;
+}
+
+.admin-department-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-department-title {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.admin-department-title b {
+  color: #eee;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-department-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: #88867f;
+  font-size: 9px;
+}
+
+.admin-department-meta>span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-department-meta b {
+  color: #d5d2cb;
+}
+
+.admin-department-year-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.admin-department-year-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border: 1px solid #dfb97123;
+  border-radius: 999px;
+  background: #dfb9710c;
+  color: #d9c08f;
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.admin-department-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.admin-department-actions .admin-btn {
+  min-height: 32px;
+  padding: 6px 10px;
+  font-size: 9px;
+}
+
+.admin-department-actions .admin-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+.admin-department-sections {
+  display: grid;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #ffffff10;
+}
+
+.admin-section-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 10px;
+  border: 1px solid #ffffff12;
+  border-radius: 8px;
+  background: #ffffff04;
+  flex-wrap: wrap;
+}
+
+.admin-section-info {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+  min-width: 180px;
+}
+
+.admin-section-info b {
+  color: #e8e6e0;
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-section-info small {
+  color: #85837d;
+  font-size: 8.5px;
+}
+
+.admin-section-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 7px;
+  border: 1px solid #ffffff20;
+  border-radius: 999px;
+  background: #ffffff05;
+  color: #aaa8a1;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.admin-section-actions {
+  display: flex;
+  gap: 5px;
+  flex: none;
+}
+
+.admin-section-actions .admin-btn-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.admin-section-actions .admin-btn-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Inline edit states */
+.admin-inline-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.admin-inline-edit input {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid #ffffff20;
+  border-radius: 6px;
+  outline: 0;
+  background: #0d0d0d;
+  color: #f0efeb;
+  font: 500 10px inherit;
+}
+
+.admin-inline-edit input:focus {
+  border-color: #dfb971cc;
+  box-shadow: 0 0 0 3px #dfb97115;
+}
+
+.admin-inline-edit .admin-btn {
+  min-height: 32px;
+  padding: 6px 10px;
+  font-size: 9px;
+}
+
+/* Add section form */
+.admin-add-section-form {
+  display: flex;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #ffffff15;
+  flex-wrap: wrap;
+}
+
+.admin-add-section-form input {
+  flex: 1;
+  min-width: 160px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #ffffff1c;
+  border-radius: 7px;
+  outline: 0;
+  background: #0d0d0d;
+  color: #f0efeb;
+  font: 500 10px inherit;
+}
+
+.admin-add-section-form input:focus {
+  border-color: #dfb971cc;
+  box-shadow: 0 0 0 3px #dfb97115;
+}
+
+.admin-add-section-form .admin-btn {
+  min-height: 34px;
+  padding: 7px 12px;
+  font-size: 9px;
+}
+
+/* ==========================================================================
+   Filter Bar (for Mentee Modal)
+   ========================================================================== */
+
+.admin-modal-filter-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid #ffffff15;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #ffffff0c, #ffffff05);
+  box-shadow: inset 0 1px #ffffff08;
+  flex-wrap: wrap;
+}
+
+.admin-modal-filter-bar label {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  color: #aaa8a1;
+  font-size: 8px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.admin-modal-filter-bar .admin-search-field,
+.admin-modal-filter-bar .admin-select-field {
+  min-width: 160px;
+  flex: 1;
+}
+
+/* ==========================================================================
+   Empty / Loading / Error States
+   ========================================================================== */
+
+.admin-modal-empty,
+.admin-modal-loading,
+.admin-modal-error {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  min-height: 140px;
+  padding: 24px;
+  text-align: center;
+  color: #918f89;
+  font-size: 10px;
+}
+
+.admin-modal-empty svg,
+.admin-modal-error svg {
+  width: 24px;
+  height: 24px;
+  color: #c9aa74;
+}
+
+.admin-modal-empty b,
+.admin-modal-error b {
+  color: #dedbd4;
+  font-size: 11px;
+}
+
+.admin-modal-empty span {
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+.admin-modal-error {
+  color: #ffa0a0;
+}
+
+.admin-modal-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff20;
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: admin-modal-spin 0.8s linear infinite;
+}
+
+@keyframes admin-modal-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   Confirm Dialog Overrides
+   ========================================================================== */
+
+.admin-confirm-modal {
+  width: min(480px, 100%) !important;
+  max-height: min(80vh, 600px) !important;
+  padding: 24px !important;
+}
+
+.admin-confirm-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 12px;
+  border: 1px solid #ff8c8c40;
+  border-radius: 50%;
+  background: #ff6b6b10;
+  color: #ffb0b0;
+}
+
+.admin-confirm-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 760px) {
+  .admin-modal {
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .admin-modal-header {
+    border-radius: 0;
+    padding: 16px 18px 12px;
+  }
+
+  .admin-modal-body {
+    padding: 16px 18px 0;
+  }
+
+  .admin-modal-footer {
+    border-radius: 0;
+    padding: 14px 18px 18px;
+    flex-wrap: wrap;
+  }
+
+  .admin-modal-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-student-row {
+    grid-template-columns: 36px 1fr;
+    grid-template-areas:
+      "checkbox main"
+      "checkbox meta"
+      "checkbox status";
+    gap: 8px 12px;
+  }
+
+  .admin-student-row-checkbox {
+    grid-area: checkbox;
+  }
+
+  .admin-student-row-main {
+    grid-area: main;
+  }
+
+  .admin-student-row-meta {
+    grid-area: meta;
+  }
+
+  .admin-student-row-status {
+    grid-area: status;
+    justify-self: start;
+  }
+
+  .admin-department-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-department-actions {
+    width: 100%;
+  }
+
+  .admin-department-actions .admin-btn {
+    flex: 1;
+  }
+
+  .admin-section-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-section-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .admin-modal-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-modal-filter-bar .admin-search-field,
+  .admin-modal-filter-bar .admin-select-field {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-modal-backdrop {
+    padding: 0;
+    place-items: start;
+  }
+
+  .admin-modal {
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+
+  .admin-modal-header {
+    padding: 14px 16px 10px;
+  }
+
+  .admin-modal-header h2 {
+    font-size: 18px;
+  }
+
+  .admin-modal-body {
+    padding: 14px 16px 0;
+  }
+
+  .admin-modal-footer {
+    padding: 12px 16px 16px;
+  }
+
+  .admin-btn {
+    min-height: 40px;
+    padding: 10px 14px;
+  }
+
+  .admin-student-row {
+    padding: 10px;
+  }
+
+  .admin-department-card {
+    padding: 12px;
+  }
+}

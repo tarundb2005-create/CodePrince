@@ -1,0 +1,227 @@
+@import './admin-modal.css';
+
+.admin-courses-page {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 28px 28px 42px;
+  color: #f4f3f0;
+}
+
+.admin-courses-filters {
+  grid-template-columns: minmax(280px, 2fr) auto;
+}
+
+.admin-course-code {
+  color: #dfb971 !important;
+  font-weight: 750;
+  letter-spacing: .03em;
+  font-size: 11px;
+}
+
+.admin-course-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 220px;
+}
+
+.admin-course-identity > span {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 30px !important;
+  height: 30px !important;
+  border: 1px solid #ffffff22;
+  border-radius: 50% !important;
+  background: #dfb97115 !important;
+  color: #dfb971 !important;
+}
+
+.admin-course-identity svg {
+  width: 14px !important;
+  height: 14px !important;
+  flex: none;
+}
+
+.admin-course-identity > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.admin-course-identity b {
+  max-width: 280px;
+  overflow: hidden;
+  color: #f0efeb;
+  font-size: 11px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-course-identity small {
+  max-width: 320px;
+  overflow: hidden;
+  color: #888680;
+  font-size: 9.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-faculty-cell {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 9px;
+  min-width: 140px;
+  max-width: 220px;
+}
+
+.admin-faculty-avatar {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px !important;
+  height: 28px !important;
+  border: 1px solid #ffffff1c;
+  border-radius: 50% !important;
+  background: #ffffff0a !important;
+  color: #e7e5df !important;
+}
+
+.admin-faculty-avatar svg {
+  width: 14px !important;
+  height: 14px !important;
+  flex: none;
+}
+
+.admin-faculty-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.admin-faculty-info b {
+  display: block;
+  max-width: 150px;
+  overflow: hidden;
+  color: #f0efeb;
+  font-size: 11px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-faculty-info small {
+  display: block;
+  max-width: 160px;
+  overflow: hidden;
+  color: #8d8b85;
+  font-size: 9.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-muted {
+  display: inline-flex !important;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 6px !important;
+  background: #ffffff06 !important;
+  border: 1px solid #ffffff12;
+  color: #9d9b95 !important;
+  font-size: 10px !important;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.admin-course-status {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px !important;
+  border-radius: 999px !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.admin-course-status i {
+  display: inline-block !important;
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  flex: none;
+}
+
+.admin-course-status.active {
+  border: 1px solid #76cf9e38 !important;
+  background: #76cf9e12 !important;
+  color: #9ddbb7 !important;
+}
+
+.admin-course-status.active i {
+  background: #76cf9e !important;
+  box-shadow: 0 0 6px #76cf9e66;
+}
+
+.admin-course-status.inactive {
+  border: 1px solid #ffffff36 !important;
+  background: #ffffff0d !important;
+  color: #e0bd7d !important;
+}
+
+.admin-course-status.inactive i {
+  background: #eab308 !important;
+  box-shadow: 0 0 6px #eab30866;
+}
+
+@media (max-width: 1100px) {
+  .admin-student-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .admin-student-search {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-courses-page {
+    padding: 22px 15px 32px;
+  }
+  .admin-students-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .admin-students-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .admin-student-filters {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+  .admin-student-search {
+    grid-column: auto;
+  }
+  .admin-student-directory > header {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-students-heading h1 {
+    font-size: 28px;
+  }
+  .admin-students-actions > * {
+    flex: 1;
+    font-size: 9px;
+  }
+  .admin-student-directory > header {
+    padding: 12px;
+  }
+}
