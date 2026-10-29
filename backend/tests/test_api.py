@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 
 def credentials():
-    return {"email": f"test-{uuid4().hex}@example.com", "password": "supersecret"}
+    return {"email": f"test-{uuid4().hex}@gmail.com", "password": "superSecret!A", "registration_number": "41142" + str(uuid4().int % 1_000_000).zfill(6), "full_name": "Test Student", "academic_year": "1st year", "section": "A", "department": "CSE"}
 
 def test_auth_and_private_tests():
     with TestClient(app) as c:
