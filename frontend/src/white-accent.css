@@ -1,0 +1,156 @@
+/* Shared white accent theme for the faculty and admin portals. */
+.faculty-app .faculty-brand>svg,
+.faculty-app .faculty-sidebar nav a.active,
+.faculty-app .faculty-section-title>a,
+.faculty-app .faculty-welcome-mark,
+.faculty-app .faculty-stat-icon,
+.faculty-app .faculty-row-icon,
+.faculty-app .faculty-course-code,
+.faculty-app .faculty-directory-reg,
+.faculty-app .faculty-directory-action,
+.faculty-app .faculty-progress-value,
+.faculty-app .faculty-assessment-icon,
+.faculty-app .faculty-badge.scheduled,
+.faculty-app .faculty-assignment-status.open {
+  color: #f5f5f3;
+}
+
+.faculty-app .faculty-sidebar nav a.active {
+  background: #ffffff12;
+  border-color: #ffffff38;
+}
+
+.faculty-app .faculty-welcome {
+  background: radial-gradient(circle at 84% 28%, #ffffff14, transparent 34%), linear-gradient(120deg, #191817, #121212 68%);
+}
+
+.faculty-app .faculty-welcome-mark {
+  border-color: #ffffff25;
+  background: #ffffff08;
+}
+
+.faculty-app .faculty-primary {
+  border-color: #f5f5f3;
+  background: #f5f5f3;
+  color: #111;
+}
+
+.faculty-app .faculty-primary:hover {
+  background: #fff;
+}
+
+.faculty-app .faculty-secondary:hover {
+  border-color: #ffffff80;
+}
+
+.faculty-app .faculty-stat-icon {
+  border-color: #ffffff2e;
+  background: #ffffff14;
+}
+
+.faculty-app .faculty-steps>div {
+  border-left-color: #ffffff66;
+}
+
+.faculty-app .faculty-course-code {
+  background: #ffffff12;
+}
+
+.faculty-app .faculty-avatar {
+  background: linear-gradient(145deg, #fff, #999);
+  color: #111;
+}
+
+.faculty-app .faculty-form-grid input:focus,
+.faculty-app .faculty-form-grid select:focus,
+.faculty-app .faculty-toolbar select:focus,
+.faculty-app .faculty-inline-form input:focus,
+.faculty-app .faculty-inline-form select:focus,
+.faculty-app .faculty-account-map-form input:focus,
+.faculty-app .faculty-directory-filters select:focus,
+.faculty-app .faculty-directory-filters input:focus,
+.faculty-app .faculty-directory-search>div:focus-within,
+.faculty-app .faculty-problem-search:focus-within,
+.faculty-app .faculty-assignment-filters select:focus {
+  border-color: #ffffff9c;
+  box-shadow: 0 0 0 3px #ffffff15;
+}
+
+.faculty-app .faculty-progress-track em {
+  background: #f5f5f3;
+}
+
+.faculty-app .faculty-completion-metrics strong {
+  color: #f5f5f3;
+}
+
+.faculty-app .faculty-legend-solved {
+  background: linear-gradient(90deg, #999, #fff);
+}
+
+.faculty-app .faculty-score-legend {
+  background: linear-gradient(180deg, #fff, #999);
+}
+
+.faculty-app .faculty-publish-student-list label.selected,
+.faculty-app .faculty-assignment-student-grid label:hover,
+.faculty-app .faculty-assignment-student-grid label.selected {
+  border-color: #ffffff78;
+  background: #ffffff0d;
+}
+
+.faculty-app .faculty-publish-student-list input,
+.faculty-app .faculty-assignment-student-grid input,
+.faculty-app .faculty-question-picker input {
+  accent-color: #fff;
+}
+
+.faculty-app stop[stop-color="#c49a59"],
+.faculty-app stop[stop-color="#f0d49f"],
+.faculty-app stop[stop-color="#bd8f4d"] {
+  stop-color: #fff;
+}
+
+.admin-directory-primary {
+  border-color: #f5f5f3 !important;
+  background: #f5f5f3 !important;
+  color: #111 !important;
+}
+
+.admin-directory-primary:hover {
+  background: #fff !important;
+}
+
+.admin-reg-number,
+.admin-student-identity>span,
+.admin-approval-badge.pending,
+.admin-student-edit:hover,
+.admin-student-empty>svg {
+  color: #f5f5f3 !important;
+}
+
+.admin-student-filters input:focus,
+.admin-student-filters select:focus,
+.admin-student-filters label>div:focus-within,
+.admin-student-form-grid input:focus,
+.admin-student-form-grid select:focus,
+.admin-add-department-form input:focus,
+.admin-department-list input:focus {
+  border-color: #ffffff9c !important;
+  box-shadow: 0 0 0 3px #ffffff15 !important;
+}
+
+.admin-student-identity>span {
+  border-color: #ffffff28;
+  background: #ffffff12;
+}
+
+.admin-approval-badge.pending,
+.admin-section-chips span {
+  border-color: #ffffff30;
+  background: #ffffff0c;
+}
+
+.admin-student-spinner {
+  border-top-color: #fff;
+}

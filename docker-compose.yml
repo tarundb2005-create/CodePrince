@@ -19,6 +19,8 @@ services:
       EXECUTOR_IMAGE: dsa-forge-executor:local
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change-this-password}
+      FACULTY_EMAIL: ${FACULTY_EMAIL:-}
+      FACULTY_PASSWORD: ${FACULTY_PASSWORD:-}
 
   web:
     build: ./frontend
