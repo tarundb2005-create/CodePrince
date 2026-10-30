@@ -3,8 +3,7 @@ from __future__ import annotations
 
 import os
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-<<<<<<< HEAD
+from fastapi.middleware.cors import CORSMiddleware 
 from .routes import router
 from .startup import seed
 
@@ -19,7 +18,7 @@ app.add_middleware(
 )
 app.include_router(router)
 app.on_event("startup")(seed)
-=======
+
 from pydantic import BaseModel, Field
 from pwdlib import PasswordHash
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, create_engine, func, inspect, select
@@ -556,4 +555,3 @@ def admin_create_problem(body: QuestionIn, u: User = Depends(current), s: Sessio
     """Create a published platform problem; enforced independently of the UI."""
     require_role(u, "admin")
     return save_question(None, body, u, s)
->>>>>>> origin/main
