@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json, os
 from datetime import datetime
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from .db import Base, SessionLocal, engine
 from .models import Question, TestCase, User
 from .core import password_hash
@@ -60,3 +60,46 @@ def seed():
           if raw not in existing:
             s.add(TestCase(question_id=fq.id,input=raw,expected_output=expected,is_hidden=(payload,expected) in hidden_cases))
         s.commit()
+
+    c_problems = [
+      {
+        "title":"C: Student Details","slug":"c-print-student-details","statement":"Write a C function `print_student_details()` that prints your name, department, college name, and register number, each on its own line.","topic":"C Programming","starter_code":"#include <stdio.h>\nvoid print_student_details(void) {\n    // Print name, department, college, and register number.\n}\n","tests":[("{}","Your Name\\nCSE\\nYour College\\n41142000000\\n",False),("{}","Student\\nAIDS\\nCodePrince College\\n41142000001\\n",True)]
+      },
+      {
+        "title":"C: Arithmetic Operations","slug":"c-arithmetic-operations","statement":"Write a C function `calculate_operations(a, b, sum, difference, product, quotient, remainder)` that calculates the sum, difference, product, quotient, and remainder of two integers. The quotient is a double.","topic":"C Programming","starter_code":"#include <stdio.h>\nvoid calculate_operations(int a, int b, int *sum, int *difference, int *product, double *quotient, int *remainder) {\n    // Calculate all five operations.\n}\n","tests":[('{"a":20,"b":6}',"26\\n14\\n120\\n3.33\\n2\\n",False),('{"a":9,"b":4}',"13\\n5\\n36\\n2.25\\n1\\n",True)]
+      },
+      {
+        "title":"C: Data Types","slug":"c-data-types","statement":"Write a C function `demonstrate_data_types()` that declares and prints an int, float, char, and double value in that order, one per line. Use 10, 3.14, A, and 2.71828.","topic":"C Programming","starter_code":"#include <stdio.h>\nvoid demonstrate_data_types(void) {\n    // Declare and print int, float, char, and double values.\n}\n","tests":[("{}","10\\n3.14\\nA\\n2.71828\\n",False),("{}","10\\n3.14\\nA\\n2.71828\\n",True)]
+      },
+      {
+        "title":"C: Rectangle Metrics","slug":"c-rectangle-metrics","statement":"Write a C function `rectangle_metrics(length, width, area, perimeter)` that calculates the area and perimeter of a rectangle and stores them in the output pointers.","topic":"C Programming","starter_code":"#include <stdio.h>\nvoid rectangle_metrics(double length, double width, double *area, double *perimeter) {\n    // Calculate area and perimeter.\n}\n","tests":[('{"length":5,"width":3}',"15.00\\n16.00\\n",False),('{"length":10,"width":2.5}',"25.00\\n25.00\\n",True)]
+      },
+      {
+        "title":"C: Circle Metrics","slug":"c-circle-metrics","statement":"Write a C function `circle_metrics(radius, area, circumference)` that calculates the area and circumference of a circle using PI = 3.141592653589793.","topic":"C Programming","starter_code":"#include <stdio.h>\nvoid circle_metrics(double radius, double *area, double *circumference) {\n    // Use PI = 3.141592653589793.\n}\n","tests":[('{"radius":2}',"12.57\n12.57\n",False),('{"radius":5}',"78.54\n31.42\n",True)]
+      },
+    ]
+    with SessionLocal() as s:
+      for item in c_problems:
+        q=s.scalar(select(Question).where(Question.slug==item["slug"]))
+        if not q:
+          q=Question(title=item["title"],slug=item["slug"],statement=item["statement"],difficulty="Easy",topic=item["topic"],tags='["c","functions","beginner"]',input_format="The judge supplies the function arguments.",output_format="Print or store the requested values exactly as described.",starter_code=json.dumps({"c":item["starter_code"]}),published=True)
+          s.add(q); s.flush()
+          for raw, expected, hidden in item["tests"]:
+            s.add(TestCase(question_id=q.id,input=raw,expected_output=expected,is_hidden=hidden))
+      s.commit()
+
+    with SessionLocal() as s:
+      pair=s.scalar(select(Question).where(Question.slug=="pair-sum-function"))
+      if pair:
+        hidden=list(s.scalars(select(TestCase).where(TestCase.question_id==pair.id,TestCase.is_hidden==True).order_by(TestCase.id.desc())))
+        for test in hidden[:min(20, max(0, len(hidden)-11))]:
+          s.delete(test)
+        s.commit()
+
+    with SessionLocal() as s:
+      c_questions=list(s.scalars(select(Question).where(Question.slug.like("c-%"))))
+      for q in c_questions:
+        for test in s.scalars(select(TestCase).where(TestCase.question_id==q.id)):
+          if "\\n" in test.expected_output:
+            test.expected_output=test.expected_output.replace("\\n", "\n")
+      s.commit()

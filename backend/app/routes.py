@@ -145,8 +145,18 @@ def _docker():
     if client is None: return False
     client.close()
     return True
-def function_source(source:str, language:str, raw_input:str):
-    data=json.loads(raw_input); nums=data["nums"]; target=data["target"]; values=",".join(map(str,nums))
+def function_source(source:str, language:str, raw_input:str, slug:str="pair-sum-function"):
+    data=json.loads(raw_input)
+    if language=="c" and slug.startswith("c-"):
+        runners={
+          "c-print-student-details": f"\nint main(void){{ print_student_details(); return 0; }}\n",
+          "c-arithmetic-operations": f"\nint main(void){{ int sum,difference,product,remainder; double quotient; calculate_operations({data.get('a', 0)},{data.get('b', 0)},&sum,&difference,&product,&quotient,&remainder); printf(\"%d\\n%d\\n%d\\n%.2f\\n%d\\n\",sum,difference,product,quotient,remainder); return 0; }}\n",
+          "c-data-types": "\nint main(void){ demonstrate_data_types(); return 0; }\n",
+          "c-rectangle-metrics": f"\nint main(void){{ double area,perimeter; rectangle_metrics({data.get('length', 0)},{data.get('width', 0)},&area,&perimeter); printf(\"%.2f\\n%.2f\\n\",area,perimeter); return 0; }}\n",
+          "c-circle-metrics": f"\nint main(void){{ double area,circumference; circle_metrics({data.get('radius', 0)},&area,&circumference); printf(\"%.2f\\n%.2f\\n\",area,circumference); return 0; }}\n",
+        }
+        return source+runners[slug]
+    nums=data["nums"]; target=data["target"]; values=",".join(map(str,nums))
     if language=="python": return source+f"\nimport json\nprint(json.dumps(has_pair_sum({nums!r}, {target})))\n"
     if language=="cpp": return source+f'\nint main(){{ vector<int> nums={{{values}}}; cout << (Solution().hasPairSum(nums,{target}) ? "true" : "false"); }}\n'
     if language=="c": return source+f"\n#include <stdio.h>\nint main(void){{ int nums[]={{ {values} }}; printf(\"%s\",has_pair_sum(nums,{len(nums)},{target}) ? \"true\" : \"false\"); return 0; }}\n"
@@ -154,9 +164,9 @@ def function_source(source:str, language:str, raw_input:str):
     if language=="go": return source+f"\nfunc main() {{ fmt.Print(hasPairSum([]int{{{values}}}, {target})) }}\n"
     raise ValueError("Unsupported language")
 def is_function_question(q):
-    return q.slug.endswith("-function") or "function" in q.title.lower()
+    return q.slug.endswith("-function") or q.slug.startswith("c-") or "function" in q.title.lower()
 def outputs_match(actual:str,expected:str):
-    a=actual.strip(); e=expected.strip()
+    a=actual.replace("\\n", "\n").strip(); e=expected.replace("\\n", "\n").strip()
     if a.lower() in {"true","false"} and e.lower() in {"true","false"}: return a.lower()==e.lower()
     return a==e
 def split_docker_logs(raw: bytes):
@@ -174,7 +184,7 @@ def split_docker_logs(raw: bytes):
         stdout_parts.append(raw[offset:])
     return b"".join(stdout_parts), b"".join(stderr_parts)
 
-def execute(body:ExecuteIn,inputs:list[str],function_mode:bool=False,verify:bool=False):
+def execute(body:ExecuteIn,inputs:list[str],function_mode:bool=False,verify:bool=False,slug:str="pair-sum-function"):
     client=_docker_client()
     if client is None: raise HTTPException(503,"Docker executor unavailable. Check the Docker socket and executor image.")
     suffix={"c":"main.c","cpp":"main.cpp","java":"Main.java","python":"main.py","go":"main.go"}[body.language]
@@ -188,7 +198,7 @@ def execute(body:ExecuteIn,inputs:list[str],function_mode:bool=False,verify:bool
         runner=f"import json\nnamespace={{}}\nexec(compile(open(\"/tmp/solution.py\", encoding=\"utf-8\").read(), \"solution.py\", \"exec\"), namespace)\nprint(json.dumps(namespace[\"has_pair_sum\"]({data['nums']!r}, {data['target']})))\n"
         Path(d,"main.py").write_text(runner,encoding="utf-8")
        elif function_mode:
-        Path(d,suffix).write_text(function_source(body.source,body.language,inp),encoding="utf-8")
+        Path(d,suffix).write_text(function_source(body.source,body.language,inp,slug),encoding="utf-8")
        else:
         Path(d,suffix).write_text(body.source,encoding="utf-8")
        Path(d,"input").write_text("" if function_mode else inp,encoding="utf-8")
@@ -223,8 +233,18 @@ def run(body:ExecuteIn,u:User=Depends(current),s:Session=Depends(db)):
     q=s.get(Question,body.question_id)
     if not q or not(q.published or owned(q,u)):raise HTTPException(404,"Question not found")
     sample=s.scalar(select(TestCase).where(TestCase.question_id==q.id,TestCase.input==body.input,TestCase.is_hidden==False))
+    if sample is None and body.language == "c" and q.slug.startswith("c-"):
+        sample=s.scalar(select(TestCase).where(TestCase.question_id==q.id,TestCase.is_hidden==False).order_by(TestCase.id))
     inputs=[body.input] if body.input is not None else list(s.scalars(select(TestCase.input).where(TestCase.question_id==q.id,TestCase.is_hidden==False)))
-    result=execute(body,inputs,is_function_question(q),False)
+    if body.input is not None and body.language == "c" and q.slug.startswith("c-"):
+        required_key = {"c-arithmetic-operations":"a", "c-rectangle-metrics":"length", "c-circle-metrics":"radius"}.get(q.slug)
+        if required_key:
+            try:
+                if required_key not in json.loads(body.input):
+                    inputs = [s.scalar(select(TestCase.input).where(TestCase.question_id==q.id, TestCase.is_hidden==False))]
+            except json.JSONDecodeError:
+                raise HTTPException(400, "Input must be valid JSON")
+    result=execute(body,inputs,is_function_question(q),False,q.slug)
     if sample and result.get("verdict")=="Executed":
         actual=result.get("results",[{}])[0].get("output","").strip()
         passed=outputs_match(actual,sample.expected_output)
@@ -236,7 +256,7 @@ def run(body:ExecuteIn,u:User=Depends(current),s:Session=Depends(db)):
 def submit(body:ExecuteIn,u:User=Depends(current),s:Session=Depends(db)):
     q=s.get(Question,body.question_id)
     if not q or not(q.published or owned(q,u)):raise HTTPException(404,"Question not found")
-    tests=list(s.scalars(select(TestCase).where(TestCase.question_id==q.id)));result=execute(body,[t.input for t in tests],is_function_question(q),True); verdict=result["verdict"]
+    tests=list(s.scalars(select(TestCase).where(TestCase.question_id==q.id)));result=execute(body,[t.input for t in tests],is_function_question(q),True,q.slug); verdict=result["verdict"]
     results=result.get("results",[])
     mismatches=[]; case_results=[]
     for i,(r,t) in enumerate(zip(results,tests)):
