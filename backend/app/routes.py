@@ -545,3 +545,102 @@ def admin_create_problem(body: QuestionIn, u: User = Depends(current), s: Sessio
     """Create a published platform problem; enforced independently of the UI."""
     require_role(u, "admin")
     return save_question(None, body, u, s)
+
+# Admin directory endpoints intentionally do not share any code with the compiler or judge.
+def admin_directory_user_view(user: User):
+    return {"id": user.id, "email": user.email, "role": user.role, "full_name": user.full_name,
+            "registration_number": user.registration_number, "academic_year": user.academic_year,
+            "department": user.department, "section": user.section, "created_at": user.created_at}
+
+@router.get("/api/admin/directory/users")
+def admin_directory_users(role: str, search: str = "", academic_year: str = "", department: str = "", section: str = "", u: User = Depends(current), s: Session = Depends(db)):
+    require_role(u, "admin")
+    if role not in {"student", "faculty"}: raise HTTPException(422, "role must be student or faculty")
+    statement = select(User).where(User.role == role)
+    if search:
+        term = f"%{search.strip()}%"
+        statement = statement.where(User.email.ilike(term) | User.full_name.ilike(term) | User.registration_number.ilike(term))
+    if academic_year: statement = statement.where(User.academic_year == academic_year)
+    if department: statement = statement.where(User.department == department)
+    if section: statement = statement.where(User.section == section)
+    return [admin_directory_user_view(item) for item in s.scalars(statement.order_by(User.created_at.desc()))]
+
+@router.post("/api/admin/directory/users", status_code=201)
+def admin_directory_create_user(body: AdminDirectoryUserIn, u: User = Depends(current), s: Session = Depends(db)):
+    require_role(u, "admin")
+    if not body.password: raise HTTPException(422, "A temporary password is required")
+    email = body.email.strip().lower()
+    if s.scalar(select(User).where(User.email == email)): raise HTTPException(409, "Email already registered")
+    registration = body.registration_number.strip() if body.registration_number else None
+    if registration and s.scalar(select(User).where(User.registration_number == registration)): raise HTTPException(409, "Registration number already registered")
+    item = User(email=email, password_hash=password_hash.hash(body.password), role=body.role, full_name=(body.full_name or "").strip() or None, registration_number=registration, academic_year=body.academic_year or None, department=body.department or None, section=body.section or None)
+    s.add(item); s.commit(); s.refresh(item)
+    return admin_directory_user_view(item)
+
+@router.patch("/api/admin/directory/users/{user_id}")
+def admin_directory_update_user(user_id: int, body: AdminDirectoryUserIn, u: User = Depends(current), s: Session = Depends(db)):
+    require_role(u, "admin")
+    item = s.get(User, user_id)
+    if not item or item.role not in {"student", "faculty"}: raise HTTPException(404, "Account not found")
+    email = body.email.strip().lower()
+    if s.scalar(select(User).where(User.email == email, User.id != item.id)): raise HTTPException(409, "Email already registered")
+    registration = body.registration_number.strip() if body.registration_number else None
+    if registration and s.scalar(select(User).where(User.registration_number == registration, User.id != item.id)): raise HTTPException(409, "Registration number already registered")
+    item.email = email; item.role = body.role; item.full_name = (body.full_name or "").strip() or None; item.registration_number = registration
+    item.academic_year = body.academic_year or None; item.department = body.department or None; item.section = body.section or None
+    if body.password: item.password_hash = password_hash.hash(body.password)
+    s.commit(); s.refresh(item)
+    return admin_directory_user_view(item)
+
+@router.post("/api/admin/directory/users/{user_id}/reset-password", status_code=204)
+def admin_directory_reset_password(user_id: int, body: PasswordResetIn, u: User = Depends(current), s: Session = Depends(db)):
+    require_role(u, "admin")
+    item = s.get(User, user_id)
+    if not item or item.role not in {"student", "faculty"}: raise HTTPException(404, "Account not found")
+    item.password_hash = password_hash.hash(body.password); s.commit()
+
+@router.delete("/api/admin/directory/users/{user_id}", status_code=204)
+def admin_directory_delete_user(user_id: int, u: User = Depends(current), s: Session = Depends(db)):
+    require_role(u, "admin")
+    if user_id == u.id: raise HTTPException(422, "You cannot delete your own account")
+    item = s.get(User, user_id)
+    if not item or item.role not in {"student", "faculty"}: raise HTTPException(404, "Account not found")
+    s.delete(item); s.commit()
+
+@router.get("/api/admin/directory/courses")
+def admin_directory_courses(u: User = Depends(current), s: Session = Depends(db)):
+    require_role(u, "admin")
+    result = []
+    for course in s.scalars(select(Course).order_by(Course.code)):
+        faculty = s.get(User, course.faculty_id) if course.faculty_id else None
+        result.append({**course_view(course), "faculty": admin_directory_user_view(faculty) if faculty else None, "student_count": s.scalar(select(func.count()).select_from(Enrollment).where(Enrollment.course_id == course.id)) or 0})
+    return result
+
+@router.post("/api/admin/directory/courses", status_code=201)
+def admin_directory_create_course(body: AdminDirectoryCourseIn, u: User = Depends(current), s: Session = Depends(db)):
+    require_role(u, "admin")
+    code = body.code.strip().upper()
+    if s.scalar(select(Course).where(Course.code == code)): raise HTTPException(409, "Course code already exists")
+    if body.faculty_id and (not (faculty := s.get(User, body.faculty_id)) or faculty.role != "faculty"): raise HTTPException(422, "Select a valid faculty account")
+    item = Course(title=body.title.strip(), code=code, description=body.description.strip(), faculty_id=body.faculty_id, active=body.active)
+    s.add(item); s.commit(); s.refresh(item)
+    return course_view(item)
+
+@router.patch("/api/admin/directory/courses/{course_id}")
+def admin_directory_update_course(course_id: int, body: AdminDirectoryCourseIn, u: User = Depends(current), s: Session = Depends(db)):
+    require_role(u, "admin")
+    item = s.get(Course, course_id)
+    if not item: raise HTTPException(404, "Course not found")
+    code = body.code.strip().upper()
+    if s.scalar(select(Course).where(Course.code == code, Course.id != item.id)): raise HTTPException(409, "Course code already exists")
+    if body.faculty_id and (not (faculty := s.get(User, body.faculty_id)) or faculty.role != "faculty"): raise HTTPException(422, "Select a valid faculty account")
+    item.title = body.title.strip(); item.code = code; item.description = body.description.strip(); item.faculty_id = body.faculty_id; item.active = body.active
+    s.commit(); s.refresh(item)
+    return course_view(item)
+
+@router.delete("/api/admin/directory/courses/{course_id}", status_code=204)
+def admin_directory_delete_course(course_id: int, u: User = Depends(current), s: Session = Depends(db)):
+    require_role(u, "admin")
+    item = s.get(Course, course_id)
+    if not item: raise HTTPException(404, "Course not found")
+    s.delete(item); s.commit()

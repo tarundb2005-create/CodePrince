@@ -36,3 +36,23 @@ class SheetIn(BaseModel): title: str=Field(min_length=2,max_length=160); descrip
 class ExecuteIn(BaseModel): question_id:int; language: Literal["c","cpp","java","python","go"]; source:str=Field(min_length=1,max_length=100000); input: str|None=None
 class ProgressIn(BaseModel): bookmarked: bool|None=None; notes: str|None=Field(default=None,max_length=10000); confidence: int|None=Field(default=None,ge=0,le=5); revision_due: datetime|None=None
 
+
+class AdminDirectoryUserIn(BaseModel):
+    email: str = Field(min_length=3, max_length=255)
+    password: str | None = Field(default=None, min_length=8, max_length=128)
+    role: Literal["student", "faculty"]
+    full_name: str | None = Field(default=None, max_length=160)
+    registration_number: str | None = Field(default=None, max_length=64)
+    academic_year: str | None = Field(default=None, max_length=20)
+    department: str | None = Field(default=None, max_length=20)
+    section: str | None = Field(default=None, max_length=2)
+
+class AdminDirectoryCourseIn(BaseModel):
+    title: str = Field(min_length=2, max_length=160)
+    code: str = Field(min_length=2, max_length=40)
+    description: str = ""
+    faculty_id: int | None = None
+    active: bool = True
+
+class PasswordResetIn(BaseModel):
+    password: str = Field(min_length=8, max_length=128)
