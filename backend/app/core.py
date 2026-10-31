@@ -21,11 +21,20 @@ def db():
     try: yield s
     finally: s.close()
 def token_hash(x:str): return hashlib.sha256(x.encode()).hexdigest()
-def current(request:Request, s:Session=Depends(db)):
+def _session_user(request:Request, s:Session):
     raw=request.cookies.get(os.getenv("SESSION_COOKIE_NAME","dsa_forge_session"))
     row=s.scalar(select(LoginSession).where(LoginSession.token_hash==token_hash(raw or ""),LoginSession.expires_at>datetime.utcnow()))
     if not row: raise HTTPException(401,"Authentication required")
     return s.get(User,row.user_id)
+
+def current_allow_pending(request:Request, s:Session=Depends(db)):
+    return _session_user(request,s)
+
+def current(request:Request, s:Session=Depends(db)):
+    user=_session_user(request,s)
+    if user.must_change_password and user.role in {"student","faculty"}:
+        raise HTTPException(403,{"code":"PASSWORD_CHANGE_REQUIRED","message":"Your account was created by an administrator. Please change your temporary password before continuing."})
+    return user
 def slugify(title:str):
     base="".join(c.lower() if c.isalnum() else "-" for c in title).strip("-")[:180] or "question"; return f"{base}-{secrets.token_hex(4)}"
 def visible(q:Question,s:Session):

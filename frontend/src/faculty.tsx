@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Award, BookOpen, CalendarClock, Check, ChevronRight, ClipboardCheck, ClipboardList, GraduationCap, LayoutDashboard, LogOut, Menu, Plus, Search, ShieldCheck, Users, X } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import './faculty.css';
+import { PasswordManagement } from './PasswordManagement';
 import './faculty-progress.css';
 import './faculty-roster.css';
 import './faculty-assignments.css';
@@ -41,6 +42,7 @@ const navigation = [
   ['Problem', '/faculty/problem-assignments', ClipboardList],
   ['Assessments', '/faculty/assessments', CalendarClock],
   ['Results', '/faculty/results', ClipboardCheck],
+  ['Settings', '/faculty/settings', ClipboardCheck],
 ] as const;
 
 function initials(value: string) { return value.split('@')[0].split(/[._-]/).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'F'; }
@@ -63,7 +65,7 @@ function FacultySidebar({ me, open, close }: { me: FacultyMe; open: boolean; clo
 
 function FacultyLayout({ me }: { me: FacultyMe }) {
   const [open, setOpen] = useState(false);
-  return <div className="faculty-app"><FacultySidebar me={me} open={open} close={() => setOpen(false)}/><main className="faculty-main"><header className="faculty-header"><button className="faculty-menu" onClick={() => setOpen(true)} aria-label="Open navigation"><Menu/></button><div><span className="faculty-eyebrow">FACULTY PORTAL</span><b>Teaching workspace</b></div><div className="faculty-header-user"><span className="faculty-avatar">{initials(me.email)}</span><span>{me.email}</span></div></header><Routes><Route path="/faculty" element={<Navigate to="/faculty/overview" replace/>}/><Route path="/faculty/overview" element={<FacultyOverview/>}/><Route path="/faculty/courses/*" element={<CoursesPage/>}/><Route path="/faculty/progress" element={<ProgressPage/>}/><Route path="/faculty/problem-assignments" element={<ProblemAssignmentsPage/>}/><Route path="/faculty/assessments" element={<AssessmentsPage/>}/><Route path="/faculty/results" element={<ResultsPage/>}/><Route path="*" element={<Navigate to="/faculty/overview" replace/>}/></Routes></main></div>;
+  return <div className="faculty-app"><FacultySidebar me={me} open={open} close={() => setOpen(false)}/><main className="faculty-main"><header className="faculty-header"><button className="faculty-menu" onClick={() => setOpen(true)} aria-label="Open navigation"><Menu/></button><div><span className="faculty-eyebrow">FACULTY PORTAL</span><b>Teaching workspace</b></div><div className="faculty-header-user"><span className="faculty-avatar">{initials(me.email)}</span><span>{me.email}</span></div></header><Routes><Route path="/faculty" element={<Navigate to="/faculty/overview" replace/>}/><Route path="/faculty/overview" element={<FacultyOverview/>}/><Route path="/faculty/courses/*" element={<CoursesPage/>}/><Route path="/faculty/progress" element={<ProgressPage/>}/><Route path="/faculty/problem-assignments" element={<ProblemAssignmentsPage/>}/><Route path="/faculty/assessments" element={<AssessmentsPage/>}/><Route path="/faculty/results" element={<ResultsPage/>}/><Route path="/faculty/settings" element={<FacultySettings/>}/><Route path="*" element={<Navigate to="/faculty/overview" replace/>}/></Routes></main></div>;
 }
 
 function FacultyOverview() {
@@ -425,5 +427,7 @@ function ResultsPage() {
 }
 
 function PageHeading({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) { return <section className="faculty-page-heading"><span className="faculty-eyebrow">{eyebrow}</span><h1>{title}</h1><p>{description}</p></section>; }
+
+function FacultySettings(){return <div className="faculty-page"><PageHeading eyebrow="SETTINGS" title="Account settings." description="Manage your faculty account security."/><PasswordManagement api={api}/></div>}
 
 export function FacultyApp({ me }: { me: FacultyMe }) { if (me.role !== 'faculty') return <Navigate to="/" replace/>; return <FacultyLayout me={me}/>; }

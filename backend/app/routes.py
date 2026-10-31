@@ -32,7 +32,18 @@ def login(body:Credentials,response:Response,s:Session=Depends(db)):
     if not u or not password_hash.verify(body.password,u.password_hash): raise HTTPException(401,"Invalid email or password")
     return _login(u,response,s)
 def _login(u,response,s):
-    raw=secrets.token_urlsafe(32);s.add(LoginSession(token_hash=token_hash(raw),user_id=u.id,expires_at=datetime.utcnow()+timedelta(days=14)));s.commit();response.set_cookie(os.getenv("SESSION_COOKIE_NAME","dsa_forge_session"),raw,httponly=True,samesite="lax",secure=False,max_age=1209600);return {"id":u.id,"email":u.email,"role":u.role,"registration_number":u.registration_number}
+    raw=secrets.token_urlsafe(32);s.add(LoginSession(token_hash=token_hash(raw),user_id=u.id,expires_at=datetime.utcnow()+timedelta(days=14)));s.commit();response.set_cookie(os.getenv("SESSION_COOKIE_NAME","dsa_forge_session"),raw,httponly=True,samesite="lax",secure=False,max_age=1209600);return {"id":u.id,"email":u.email,"role":u.role,"registration_number":u.registration_number,"must_change_password":u.must_change_password}
+@router.post("/api/auth/change-password")
+def change_password(body:ChangePasswordIn, request:Request, response:Response, u:User=Depends(current_allow_pending), s:Session=Depends(db)):
+    if not password_hash.verify(body.current_password,u.password_hash): raise HTTPException(400,"Current password is incorrect")
+    if body.new_password != body.confirm_password: raise HTTPException(422,"New passwords do not match")
+    if body.new_password == body.current_password: raise HTTPException(422,"New password must be different from the current password")
+    if len(body.new_password) < 8 or not re.search(r"[A-Z]",body.new_password) or not re.search(r"[^A-Za-z0-9]",body.new_password): raise HTTPException(422,"Password must include 8 characters, an uppercase letter, and a special character")
+    u.password_hash=password_hash.hash(body.new_password); u.must_change_password=False
+    raw=secrets.token_urlsafe(32); s.query(LoginSession).filter(LoginSession.user_id==u.id).delete(); s.add(LoginSession(token_hash=token_hash(raw),user_id=u.id,expires_at=datetime.utcnow()+timedelta(days=14))); s.commit()
+    response.set_cookie(os.getenv("SESSION_COOKIE_NAME","dsa_forge_session"),raw,httponly=True,samesite="lax",secure=False,max_age=1209600)
+    return {"ok":True,"must_change_password":False}
+
 @router.post("/api/auth/logout",status_code=204)
 def logout(request:Request,response:Response,s:Session=Depends(db)):
     raw=request.cookies.get(os.getenv("SESSION_COOKIE_NAME","dsa_forge_session"));
@@ -41,7 +52,7 @@ def logout(request:Request,response:Response,s:Session=Depends(db)):
       if x:s.delete(x);s.commit()
     response.delete_cookie(os.getenv("SESSION_COOKIE_NAME","dsa_forge_session"))
 @router.get("/api/auth/me")
-def me(u:User=Depends(current)): return {"id":u.id,"email":u.email,"role":u.role,"registration_number":u.registration_number,"username":f"student-{u.id}" if u.role=="student" else None}
+def me(u:User=Depends(current_allow_pending)): return {"id":u.id,"email":u.email,"role":u.role,"registration_number":u.registration_number,"must_change_password":u.must_change_password,"username":f"student-{u.id}" if u.role=="student" else None}
 
 def profile_summary(user:User,s:Session):
     progress=list(s.scalars(select(Progress).where(Progress.user_id==user.id)))
@@ -322,7 +333,7 @@ def admin_create_user(body:AccountIn,u:User=Depends(current),s:Session=Depends(d
     require_role(u,"admin")
     if s.scalar(select(User).where(User.email==body.email.lower())): raise HTTPException(409,"Email already registered")
     if body.registration_number and s.scalar(select(User).where(User.registration_number==body.registration_number)): raise HTTPException(409,"Registration number already registered")
-    x=User(email=body.email.lower(),password_hash=password_hash.hash(body.password),role=body.role,registration_number=body.registration_number);s.add(x);s.commit();return {"id":x.id,"email":x.email,"role":x.role,"registration_number":x.registration_number}
+    x=User(email=body.email.lower(),password_hash=password_hash.hash(body.password),role=body.role,registration_number=body.registration_number,must_change_password=body.role in {"student","faculty"});s.add(x);s.commit();return {"id":x.id,"email":x.email,"role":x.role,"registration_number":x.registration_number}
 @router.get("/api/admin/users")
 def admin_users(u:User=Depends(current),s:Session=Depends(db)):
     require_role(u,"admin");return [{"id":x.id,"email":x.email,"role":x.role,"registration_number":x.registration_number} for x in s.scalars(select(User).order_by(User.id))]
@@ -573,7 +584,7 @@ def admin_directory_create_user(body: AdminDirectoryUserIn, u: User = Depends(cu
     if s.scalar(select(User).where(User.email == email)): raise HTTPException(409, "Email already registered")
     registration = body.registration_number.strip() if body.registration_number else None
     if registration and s.scalar(select(User).where(User.registration_number == registration)): raise HTTPException(409, "Registration number already registered")
-    item = User(email=email, password_hash=password_hash.hash(body.password), role=body.role, full_name=(body.full_name or "").strip() or None, registration_number=registration, academic_year=body.academic_year or None, department=body.department or None, section=body.section or None)
+    item = User(email=email, password_hash=password_hash.hash(body.password), role=body.role, full_name=(body.full_name or "").strip() or None, registration_number=registration, must_change_password=True, academic_year=body.academic_year or None, department=body.department or None, section=body.section or None)
     s.add(item); s.commit(); s.refresh(item)
     return admin_directory_user_view(item)
 
@@ -597,7 +608,7 @@ def admin_directory_reset_password(user_id: int, body: PasswordResetIn, u: User 
     require_role(u, "admin")
     item = s.get(User, user_id)
     if not item or item.role not in {"student", "faculty"}: raise HTTPException(404, "Account not found")
-    item.password_hash = password_hash.hash(body.password); s.commit()
+    item.password_hash = password_hash.hash(body.password); item.must_change_password = True; s.commit()
 
 @router.delete("/api/admin/directory/users/{user_id}", status_code=204)
 def admin_directory_delete_user(user_id: int, u: User = Depends(current), s: Session = Depends(db)):
